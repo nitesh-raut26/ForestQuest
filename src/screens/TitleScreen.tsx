@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+// TitleScreen component
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
