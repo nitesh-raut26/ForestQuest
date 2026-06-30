@@ -43,3 +43,4 @@ const styles = StyleSheet.create({
   },
   val: { fontFamily: FONT.baloo.extrabold, fontSize: 13 },
 });
+// Minor update
