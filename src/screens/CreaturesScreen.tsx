@@ -14,7 +14,7 @@ export default function CreaturesScreen({ vals }: Props) {
   const cards = vals.creatureCards || [];
   return (
     <LinearGradient colors={['#eef3e8', '#e3ebdc', '#efe2d0']} locations={[0, 0.6, 1]} style={styles.container}>
-      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 90 + insets.bottom }]}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + 18, paddingBottom: 90 + insets.bottom }]}>
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>Your Friends</Text>
@@ -57,7 +57,7 @@ export default function CreaturesScreen({ vals }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { paddingTop: 56, paddingHorizontal: 16 },
+  content: { width: '100%', maxWidth: 760, alignSelf: 'center', paddingHorizontal: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 16 },
   title: { fontFamily: FONT.baloo.bold, fontSize: 26, color: '#3a2a1c' },
   sub: { fontFamily: FONT.nunito.semibold, fontSize: 13, color: '#7a6a58', marginTop: 2 },

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BottomNav from '../components/BottomNav';
@@ -12,6 +12,8 @@ interface Props { vals: Record<string, any> }
 
 export default function JourneyScreen({ vals }: Props) {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const isWide = width >= 700;
   const quests = vals.quests || [];
   const rankLadder = vals.rankLadder || [];
   const codex = vals.puzzleCodexList || [];
@@ -20,7 +22,7 @@ export default function JourneyScreen({ vals }: Props) {
 
   return (
     <LinearGradient colors={['#efe6d6', '#e7dcc8', '#dfd2bb']} locations={[0, 0.6, 1]} style={styles.container}>
-      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 90 + insets.bottom }]}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + 18, paddingBottom: 90 + insets.bottom }]}>
         <View style={styles.header}>
           <Text style={styles.title}>Your Journey</Text>
           <CurrencyPills acorns={vals.acorns} glowDust={vals.glowDust} onOpenDaily={vals.openDaily} />
@@ -102,16 +104,38 @@ export default function JourneyScreen({ vals }: Props) {
         <Text style={styles.sectionTitle}>Memory Scrapbook</Text>
         <View style={styles.scrapGrid}>
           {scrapbook.map((sc: any, i: number) => (
-            <LinearGradient key={i} colors={parseGradientColors(sc.bg) as any} style={[styles.scrapCard, { opacity: parseFloat(sc.op) }]}>
-              {sc.earned && <Text style={styles.scrapLabel} numberOfLines={2}>{sc.label}</Text>}
-              {sc.locked && <Text style={styles.scrapLock}>🔒</Text>}
-            </LinearGradient>
+            <TouchableOpacity
+              key={sc.id || i}
+              onPress={sc.onTap}
+              activeOpacity={0.84}
+              style={[styles.scrapTouch, isWide && styles.scrapTouchWide]}
+              accessibilityRole="button"
+              accessibilityLabel={`${sc.label}. ${sc.earned ? 'Memory earned' : sc.requirement}`}
+            >
+              <LinearGradient colors={parseGradientColors(sc.bg) as any} style={[styles.scrapCard, { opacity: parseFloat(sc.op) }]}>
+                <View style={styles.scrapArt}>
+                  <GameIcon kind={sc.icon} size={isWide ? 44 : 34} color="#fff" secondary="#FFE98A" />
+                </View>
+                {sc.earned ? (
+                  <>
+                    <View style={styles.scrapCheck}><Text style={styles.scrapCheckText}>✓</Text></View>
+                    <Text style={styles.scrapLabel} numberOfLines={2}>{sc.label}</Text>
+                  </>
+                ) : (
+                  <>
+                    <View style={styles.scrapLockedVeil} />
+                    <Text style={styles.scrapLock}>🔒</Text>
+                    <Text style={styles.scrapRequirement} numberOfLines={2}>{sc.requirement}</Text>
+                  </>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>Puzzle Codex · 22 Types</Text>
+        <Text style={styles.sectionTitle}>Puzzle Codex · {vals.puzzleTypeCount || codex.length} Types</Text>
         <Text style={styles.codexIntro}>
-          110 hand-tuned puzzles across 11 regions — 10 distinct per level (3 easy · 4 medium · 3 hard). Tap Play to try any type:
+          110 hand-tuned challenges across 11 regions, plus quick-play discoveries. Tap Play to try any type:
         </Text>
         <View style={styles.ageRow}>
           {ageCoverage.map((a: any, i: number) => (
@@ -151,7 +175,7 @@ export default function JourneyScreen({ vals }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { paddingTop: 56, paddingHorizontal: 16, gap: 16 },
+  content: { width: '100%', maxWidth: 760, alignSelf: 'center', paddingHorizontal: 16, gap: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   title: { fontFamily: FONT.baloo.bold, fontSize: 26, color: '#3a2a1c' },
   rankRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: -8 },
@@ -191,10 +215,23 @@ const styles = StyleSheet.create({
   rankRowXp: { fontFamily: FONT.nunito.bold, fontSize: 11, color: '#9a8a76' },
   rankCheck: { width: 18, height: 18, borderRadius: 9, backgroundColor: '#3f7d47', alignItems: 'center', justifyContent: 'center' },
   rankCheckText: { color: '#fff', fontSize: 10, fontWeight: '900' },
-  scrapGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  scrapCard: { width: '22%', aspectRatio: 0.75, borderRadius: 12, padding: 6, justifyContent: 'flex-end', alignItems: 'center' },
-  scrapLabel: { fontFamily: FONT.nunito.extrabold, fontSize: 8.5, color: '#fff', textAlign: 'center' },
-  scrapLock: { fontSize: 17, opacity: 0.85 },
+  scrapGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'flex-start' },
+  scrapTouch: { width: '23%', aspectRatio: 0.78 },
+  scrapTouchWide: { width: '15.2%', aspectRatio: 0.82 },
+  scrapCard: {
+    flex: 1, borderRadius: 12, padding: 6, justifyContent: 'flex-end', alignItems: 'center', overflow: 'hidden',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.45)',
+  },
+  scrapArt: { position: 'absolute', top: '25%', alignSelf: 'center' },
+  scrapLabel: { fontFamily: FONT.nunito.extrabold, fontSize: 8.5, color: '#fff', textAlign: 'center', textShadowColor: 'rgba(0,0,0,0.4)', textShadowRadius: 3 },
+  scrapCheck: {
+    position: 'absolute', top: 5, right: 5, width: 18, height: 18, borderRadius: 9,
+    backgroundColor: '#3f7d47', alignItems: 'center', justifyContent: 'center',
+  },
+  scrapCheckText: { color: '#fff', fontSize: 10, fontWeight: '900' },
+  scrapLockedVeil: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(40,35,45,0.35)' },
+  scrapLock: { position: 'absolute', top: 7, right: 7, fontSize: 14, opacity: 0.9 },
+  scrapRequirement: { fontFamily: FONT.nunito.extrabold, fontSize: 7.5, color: '#fff', textAlign: 'center', opacity: 0.92 },
   codexIntro: { fontFamily: FONT.nunito.semibold, fontSize: 12, color: '#7a6a58', marginTop: -8 },
   ageRow: { flexDirection: 'row', gap: 6 },
   ageCard: { flex: 1, backgroundColor: '#fff8ef', borderRadius: 12, paddingVertical: 8, alignItems: 'center' },

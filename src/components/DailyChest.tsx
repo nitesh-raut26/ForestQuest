@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, Text, TouchableOpacity, Pressable, StyleSheet } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FONT } from '../theme/fonts';
 
@@ -11,7 +11,12 @@ export default function DailyChest({ vals }: Props) {
   return (
     <Modal visible={!!vals.dailyOpen} transparent animationType="fade" onRequestClose={vals.closeDaily}>
       <Pressable style={styles.overlay} onPress={vals.closeDaily} />
-      <View style={styles.cardWrap} pointerEvents="box-none">
+      <ScrollView
+        style={StyleSheet.absoluteFillObject}
+        contentContainerStyle={styles.cardWrap}
+        showsVerticalScrollIndicator={false}
+        pointerEvents="box-none"
+      >
         <View style={styles.card}>
           <LinearGradient colors={['#FFE7A8', '#F5A623']} style={styles.giftIcon}>
             <Text style={{ fontSize: 34 }}>🎁</Text>
@@ -48,16 +53,16 @@ export default function DailyChest({ vals }: Props) {
             </TouchableOpacity>
           )}
         </View>
-      </View>
+      </ScrollView>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(20,15,10,0.55)' },
-  cardWrap: { position: 'absolute', left: 18, right: 18, top: '50%', transform: [{ translateY: '-50%' as unknown as number }] },
+  cardWrap: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 18 },
   card: {
-    backgroundColor: '#FFF8EF', borderRadius: 28, paddingTop: 24, paddingHorizontal: 20, paddingBottom: 20, alignItems: 'center',
+    width: '100%', maxWidth: 560, backgroundColor: '#FFF8EF', borderRadius: 28, paddingTop: 24, paddingHorizontal: 20, paddingBottom: 20, alignItems: 'center',
     shadowColor: '#000', shadowOffset: { width: 0, height: 30 }, shadowOpacity: 0.4, shadowRadius: 50, elevation: 20,
   },
   giftIcon: { width: 64, height: 64, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },

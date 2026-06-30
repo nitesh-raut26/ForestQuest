@@ -1,11 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions, Easing } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, Easing, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import CharacterArt from '../components/CharacterArt';
 import GameIcon from '../components/GameIcon';
 import { FONT } from '../theme/fonts';
-
-const { width: W } = Dimensions.get('window');
 
 function useBob(duration: number, delay = 0) {
   const v = useRef(new Animated.Value(0)).current;
@@ -25,6 +23,8 @@ function useBob(duration: number, delay = 0) {
 interface Props { vals: Record<string, any> }
 
 export default function RegionScreen({ vals }: Props) {
+  const { width, height } = useWindowDimensions();
+  const compact = height < 560 || width > height;
   const cr = vals.cr || {};
   const gc = vals.gc || {};
   const ep: number = vals.exploreProgress || 0;
@@ -111,7 +111,7 @@ export default function RegionScreen({ vals }: Props) {
       {/* Avatar + guide */}
       <Animated.View style={[styles.figures, {
         transform: [
-          { translateX: travel.interpolate({ inputRange: [0, 100], outputRange: [0, W * 0.38] }) },
+          { translateX: travel.interpolate({ inputRange: [0, 100], outputRange: [0, width * 0.38] }) },
           { translateY: travelHop },
         ],
       }]}>
@@ -126,13 +126,13 @@ export default function RegionScreen({ vals }: Props) {
       </Animated.View>
 
       {/* Speech bubble */}
-      <View style={styles.bubble}>
+      <View style={[styles.bubble, compact && styles.bubbleCompact]}>
         <Text style={[styles.bubbleName, { color: gc.body || '#E8822F' }]}>{gc.name}</Text>
         <Text style={styles.bubbleText}>{vals.avatarLine}</Text>
       </View>
 
       {/* Top bar */}
-      <View style={styles.topBar}>
+      <View style={[styles.topBar, compact && styles.topBarCompact]}>
         <TouchableOpacity style={styles.backCircle} onPress={vals.goMap} activeOpacity={0.85}>
           <Text style={styles.backCircleText}>‹</Text>
         </TouchableOpacity>
@@ -144,12 +144,12 @@ export default function RegionScreen({ vals }: Props) {
       </View>
 
       {/* Progress bar */}
-      <View style={styles.progressTrack}>
+      <View style={[styles.progressTrack, compact && styles.progressTrackCompact]}>
         <LinearGradient colors={[secondary, '#fff']} style={[styles.progressFill, { width: `${ep}%` }]} />
       </View>
 
       {/* Move button */}
-      <View style={styles.actions}>
+      <View style={[styles.actions, compact && styles.actionsCompact]}>
         <TouchableOpacity onPress={vals.move} activeOpacity={0.88}>
           <LinearGradient colors={['#F5A623', '#dd8512']} style={styles.exploreBtn}>
             <Text style={styles.exploreBtnText}>{vals.moveLabel || 'Explore'} →</Text>
@@ -211,9 +211,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff8ef', borderRadius: 18, borderBottomLeftRadius: 4, padding: 12,
     shadowColor: '#28201a', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 6,
   },
+  bubbleCompact: { left: '35%', bottom: '33%', maxWidth: 310 },
   bubbleName: { fontFamily: FONT.nunito.extrabold, fontSize: 11 },
   bubbleText: { fontFamily: FONT.nunito.semibold, fontSize: 13, color: '#3a2a1c', lineHeight: 17, marginTop: 1 },
   topBar: { position: 'absolute', top: 50, left: 18, right: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  topBarCompact: { top: 10 },
   backCircle: {
     width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,248,239,0.85)', alignItems: 'center', justifyContent: 'center',
     shadowColor: '#28201a', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
@@ -229,8 +231,10 @@ const styles = StyleSheet.create({
     position: 'absolute', top: 104, left: 18, right: 18, height: 8, borderRadius: 5,
     backgroundColor: 'rgba(255,255,255,0.4)', overflow: 'hidden',
   },
+  progressTrackCompact: { top: 64 },
   progressFill: { height: '100%', borderRadius: 5 },
   actions: { position: 'absolute', bottom: 34, left: 0, right: 0, alignItems: 'center' },
+  actionsCompact: { bottom: 14, alignItems: 'flex-end', paddingRight: 24 },
   exploreBtn: {
     paddingVertical: 16, paddingHorizontal: 44, borderRadius: 36,
     shadowColor: '#b56a0c', shadowOffset: { width: 0, height: 9 }, shadowOpacity: 1, shadowRadius: 0, elevation: 8,

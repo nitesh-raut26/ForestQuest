@@ -1,11 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import GameIcon from '../components/GameIcon';
 import { FONT } from '../theme/fonts';
 import { parseGradientColors } from '../utils/parseGradient';
-
-const { width: W } = Dimensions.get('window');
 
 interface Props { vals: Record<string, any> }
 
@@ -126,7 +124,7 @@ export default function EventScreen({ vals }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   rainDrop: { position: 'absolute', top: 0, width: 2, height: 18, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.7)' },
-  content: { paddingTop: 50, paddingHorizontal: 18, paddingBottom: 40, gap: 14 },
+  content: { width: '100%', maxWidth: 760, alignSelf: 'center', paddingTop: 50, paddingHorizontal: 18, paddingBottom: 40, gap: 14 },
   backBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(255,255,255,0.85)', alignItems: 'center', justifyContent: 'center' },
   backText: { fontFamily: FONT.baloo.extrabold, fontSize: 18, color: '#1f3350' },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },

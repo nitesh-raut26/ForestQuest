@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import CharacterArt from '../components/CharacterArt';
 import { FONT } from '../theme/fonts';
@@ -7,6 +7,8 @@ import { FONT } from '../theme/fonts';
 interface Props { vals: Record<string, any> }
 
 export default function ParentScreen({ vals }: Props) {
+  const { width } = useWindowDimensions();
+  const isWide = width >= 700;
   const stats = vals.parentStats || [];
   const skills = vals.parentSkills || [];
   const badges = vals.safetyBadges || [];
@@ -31,7 +33,7 @@ export default function ParentScreen({ vals }: Props) {
 
         <View style={styles.statsGrid}>
           {stats.map((s: any, i: number) => (
-            <View key={i} style={styles.statCard}>
+            <View key={i} style={[styles.statCard, isWide && styles.statCardWide]}>
               <Text style={[styles.statValue, { color: s.color }]}>{s.value}</Text>
               <Text style={styles.statLabel}>{s.label}</Text>
             </View>
@@ -69,6 +71,23 @@ export default function ParentScreen({ vals }: Props) {
             No timers, no streaks to lose, no surprise charges. Forest Quest is designed so children can stop any time and always feel welcomed back.
           </Text>
         </View>
+
+        <View style={styles.accessCard}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.accessTitle}>Full adventure access</Text>
+            <Text style={styles.accessBody}>
+              Opens every region, creature home, rank, and sanctuary decoration for family testing.
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={vals.unlockAllContent}
+            disabled={!!vals.allUnlocked}
+            activeOpacity={0.86}
+            style={[styles.unlockButton, vals.allUnlocked && styles.unlockButtonDone]}
+          >
+            <Text style={styles.unlockButtonText}>{vals.allUnlocked ? 'Everything open ✓' : 'Unlock all'}</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </LinearGradient>
   );
@@ -76,7 +95,7 @@ export default function ParentScreen({ vals }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { paddingTop: 50, paddingHorizontal: 16, paddingBottom: 40, gap: 14 },
+  content: { width: '100%', maxWidth: 760, alignSelf: 'center', paddingTop: 50, paddingHorizontal: 16, paddingBottom: 40, gap: 14 },
   back: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
   backText: { fontFamily: FONT.baloo.extrabold, fontSize: 18, color: '#37474F' },
   title: { fontFamily: FONT.baloo.extrabold, fontSize: 26, color: '#2b3a4a' },
@@ -88,6 +107,7 @@ const styles = StyleSheet.create({
   badgeText: { fontFamily: FONT.nunito.extrabold, fontSize: 11.5, color: '#2f6e3a' },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   statCard: { width: '47%', backgroundColor: '#fff', borderRadius: 18, padding: 14, shadowColor: 'rgba(60,70,90,0.4)', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 1, shadowRadius: 16, elevation: 4 },
+  statCardWide: { width: '23.5%' },
   statValue: { fontFamily: FONT.baloo.extrabold, fontSize: 24 },
   statLabel: { fontFamily: FONT.nunito.bold, fontSize: 11, color: '#6a7888', lineHeight: 14 },
   sectionTitle: { fontFamily: FONT.baloo.bold, fontSize: 15, color: '#2b3a4a' },
@@ -104,4 +124,10 @@ const styles = StyleSheet.create({
   promiseCard: { backgroundColor: '#eaf2ec', borderRadius: 18, padding: 16 },
   promiseTitle: { fontFamily: FONT.baloo.bold, fontSize: 14, color: '#2f4a35', marginBottom: 4 },
   promiseBody: { fontFamily: FONT.nunito.semibold, fontSize: 12.5, lineHeight: 18, color: '#3f5e45' },
+  accessCard: { backgroundColor: '#2b3a4a', borderRadius: 18, padding: 16, gap: 13 },
+  accessTitle: { fontFamily: FONT.baloo.bold, fontSize: 15, color: '#fff' },
+  accessBody: { fontFamily: FONT.nunito.semibold, fontSize: 12, lineHeight: 17, color: '#ced8e2', marginTop: 2 },
+  unlockButton: { backgroundColor: '#F5A623', borderRadius: 18, paddingHorizontal: 18, paddingVertical: 11, alignItems: 'center' },
+  unlockButtonDone: { backgroundColor: '#3f7d47' },
+  unlockButtonText: { fontFamily: FONT.nunito.extrabold, fontSize: 12.5, color: '#fff' },
 });

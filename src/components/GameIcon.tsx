@@ -71,6 +71,14 @@ export default function GameIcon({
         return <G><Line x1="14" y1="34" x2="38" y2="34" {...stroke} /><Line x1="26" y1="22" x2="26" y2="46" {...stroke} /><Line x1="57" y1="29" x2="85" y2="29" {...stroke} /><Line x1="57" y1="43" x2="85" y2="43" {...stroke} /><Circle cx="50" cy="72" r="10" fill={secondary} /></G>;
       case 'dots':
         return <G><Polyline points="16,70 30,30 53,55 78,22 85,74" {...stroke} /><Circle cx="16" cy="70" r="7" fill={secondary} /><Circle cx="30" cy="30" r="7" fill={secondary} /><Circle cx="53" cy="55" r="7" fill={secondary} /><Circle cx="78" cy="22" r="7" fill={secondary} /><Circle cx="85" cy="74" r="7" fill={secondary} /></G>;
+      case 'firefly':
+        return <G><Ellipse cx="50" cy="52" rx="10" ry="24" fill={secondary} /><Circle cx="50" cy="27" r="9" fill={color} /><Ellipse cx="31" cy="48" rx="17" ry="10" fill={color} opacity=".82" transform="rotate(-24 31 48)" /><Ellipse cx="69" cy="48" rx="17" ry="10" fill={color} opacity=".82" transform="rotate(24 69 48)" /><Line x1="45" y1="20" x2="35" y2="10" {...stroke} /><Line x1="55" y1="20" x2="65" y2="10" {...stroke} /></G>;
+      case 'flower':
+        return <G>{[0, 72, 144, 216, 288].map((deg) => <Ellipse key={deg} cx="50" cy="29" rx="12" ry="20" fill={color} transform={`rotate(${deg} 50 50)`} />)}<Circle cx="50" cy="50" r="11" fill={secondary} /><Line x1="50" y1="61" x2="50" y2="88" {...stroke} /><Path d="M49 74Q31 62 27 78Q39 85 49 79" fill={color} /></G>;
+      case 'pond':
+        return <G><Ellipse cx="50" cy="65" rx="39" ry="21" fill={color} /><Ellipse cx="50" cy="61" rx="31" ry="14" fill={secondary} opacity=".72" /><Path d="M55 59Q70 45 81 55Q73 69 55 65Z" fill="#6FB36A" /><Circle cx="69" cy="55" r="4" fill="#F7D87C" /></G>;
+      case 'chime':
+        return <G><Path d="M25 27Q50 9 75 27L67 39H33Z" fill={color} /><Line x1="38" y1="39" x2="38" y2="74" {...stroke} /><Line x1="50" y1="39" x2="50" y2="83" {...stroke} /><Line x1="62" y1="39" x2="62" y2="69" {...stroke} /><Circle cx="38" cy="78" r="5" fill={secondary} /><Circle cx="50" cy="87" r="5" fill={secondary} /><Circle cx="62" cy="73" r="5" fill={secondary} /></G>;
 
       case 'flood':
         return <G><Rect x="25" y="20" width="50" height="52" rx="5" fill={color} /><Line x1="38" y1="20" x2="38" y2="72" stroke="#52718D" strokeWidth="6" /><Line x1="62" y1="20" x2="62" y2="72" stroke="#52718D" strokeWidth="6" /><Path d="M10 78Q23 65 36 78T62 78T90 78" {...stroke} stroke={secondary} /></G>;

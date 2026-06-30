@@ -1,6 +1,6 @@
 import React from 'react';
 // RewardScreen component
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import RadialOrb from '../components/RadialOrb';
 import RadialBackdrop from '../components/RadialBackdrop';
@@ -8,15 +8,14 @@ import CharacterArt, { characterIdFromName } from '../components/CharacterArt';
 import GameIcon from '../components/GameIcon';
 import { FONT } from '../theme/fonts';
 
-const { width: W, height: H } = Dimensions.get('window');
-
 export default function RewardScreen({ vals }: Props) {
+  const { width, height } = useWindowDimensions();
   const rw = vals.rw || {};
   const friendId = characterIdFromName(rw.creature);
   return (
     <View style={styles.container}>
-      <RadialBackdrop width={W} height={H} cx={0.5} cy={0.4} colors={['rgba(74,124,89,0.55)', 'rgba(20,15,10,0.85)']} />
-      <ScrollView contentContainerStyle={styles.content}>
+      <RadialBackdrop width={width} height={height} cx={0.5} cy={0.4} colors={['rgba(74,124,89,0.55)', 'rgba(20,15,10,0.85)']} />
+      <ScrollView contentContainerStyle={[styles.content, { paddingVertical: height < 560 ? 74 : 30 }]}>
         <View style={styles.card}>
           {friendId ? (
             <View style={[styles.avatarFrame, { backgroundColor: rw.glow || '#FFC58C' }]}>

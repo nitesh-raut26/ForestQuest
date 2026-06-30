@@ -1,10 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import CharacterArt from '../components/CharacterArt';
 import { FONT } from '../theme/fonts';
-
-const { width: W } = Dimensions.get('window');
 
 interface Props { vals: Record<string, any> }
 
