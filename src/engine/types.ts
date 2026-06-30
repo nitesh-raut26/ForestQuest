@@ -50,6 +50,8 @@ export interface GameState {
   gifts: Record<string, boolean>;
   eventDone: Record<string, boolean>;
   eventOwned: Record<string, boolean>;
+  decorOwned?: Record<string, boolean>;
+  decorPlaced?: Record<string, boolean>;
   rainPearls: number;
   finaleSeen?: boolean;
   toast: string | null;
@@ -93,6 +95,8 @@ export interface SaveData {
   gifts: Record<string, boolean>;
   eventDone: Record<string, boolean>;
   eventOwned: Record<string, boolean>;
+  decorOwned?: Record<string, boolean>;
+  decorPlaced?: Record<string, boolean>;
   rainPearls: number;
   finaleSeen?: boolean;
   savedAt: number;

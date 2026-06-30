@@ -162,7 +162,7 @@ class Component extends DCLogic {
       {t:'number',n:'Pearl Count',d:'H'},{t:'matrix',n:'Reef Recall',d:'H'},{t:'hanoi',n:'Cairn Stack',d:'H'} ],
     cavern: [
       {t:'memory',n:'Glow Pairs',d:'E'},{t:'word',n:'Crystal Spell',d:'E'},{t:'sound',n:'Cave Echo',d:'E'},
-      {t:'shadow',n:'Shadow Cast',d:'M'},{t:'light',n:'Beam Maze',d:'M'},{t:'pattern',n:'Glow Trail',d:'M'},{t:'rune',n:'Cave Runes',d:'M'},
+      {t:'shadow',n:'Shadow Cast',d:'M'},{t:'light',n:'Beam Maze',d:'M'},{t:'firefly',n:'Firefly Chase',d:'M'},{t:'rune',n:'Cave Runes',d:'M'},
       {t:'matrix',n:'Stalactite Grid',d:'H'},{t:'slide',n:'Boulder Slide',d:'H'},{t:'eqn',n:'Gem Sums',d:'H'} ],
     canopy: [
       {t:'colour',n:'Leaf Sort',d:'E'},{t:'shape',n:'Bark Fit',d:'E'},{t:'dots',n:'Branch Link',d:'E'},
@@ -198,6 +198,7 @@ class Component extends DCLogic {
     { type:'word', name:'Word Match', guide:'tomo', ageMin:4, ageMax:9, skill:'Early literacy \u00b7 spelling \u00b7 phonics', color:'#3DBE9B', colorDark:'#2a9a7c' },
     { type:'odd', name:'Odd One Out', guide:'pip', ageMin:4, ageMax:7, skill:'Visual discrimination \u00b7 focus', color:'#E89BB0', colorDark:'#c47a8f' },
     { type:'count', name:'Counting Quest', guide:'mimi', ageMin:4, ageMax:8, skill:'Counting \u00b7 early numeracy', color:'#56A0D3', colorDark:'#3f7faa' },
+    { type:'firefly', name:'Firefly Chase', guide:'luma', ageMin:4, ageMax:9, skill:'Visual attention \u00b7 sequencing \u00b7 reaction', color:'#E8A838', colorDark:'#B66A12' },
     { type:'maze', name:'Maze Run', guide:'nori', ageMin:6, ageMax:11, skill:'Navigation \u00b7 route planning', color:'#86C166', colorDark:'#67a049' },
     { type:'memory', name:'Memory Match', guide:'tomo', ageMin:4, ageMax:9, skill:'Memory \u00b7 concentration', color:'#6FB36A', colorDark:'#519a4c' },
     { type:'sequence', name:'Sequence Order', guide:'nori', ageMin:5, ageMax:9, skill:'Logical sequence \u00b7 ordering', color:'#5EA862', colorDark:'#427d46' },
@@ -247,6 +248,7 @@ class Component extends DCLogic {
     memory:'Memory', matrix:'Memory', pattern:'Memory', sound:'Memory',
     count:'Numeracy', number:'Numeracy', eqn:'Numeracy', weight:'Numeracy',
     sequence:'Logic', flow:'Logic', hanoi:'Logic', slide:'Logic', light:'Logic', shadow:'Logic', dots:'Logic', maze:'Logic',
+    firefly:'Visual',
     trace:'Motor' })[t] || 'Logic'; }
   skillColors = { Visual:'#E8654E', Literacy:'#3DBE9B', Memory:'#8E6FC9', Numeracy:'#56A0D3', Logic:'#5EA862', Motor:'#E0A93B' };
 
@@ -264,22 +266,22 @@ class Component extends DCLogic {
   ];
 
   scrapbook = [
-    { label:'Meadow', bg:'linear-gradient(160deg,#7BC67E,#F5A623)', earned:true },
-    { label:'Pip Bond 20', bg:'linear-gradient(160deg,#E8822F,#FFC58C)', earned:true },
-    { label:'Brook', bg:'linear-gradient(160deg,#4FB8CE,#6B8E5C)', earned:true },
-    { label:'First Solve', bg:'linear-gradient(160deg,#F2B33D,#E89B5A)', earned:true },
-    { label:'Hollow', bg:'linear-gradient(160deg,#3D6B45,#7AFCD0)', earned:false },
-    { label:'Cavern', bg:'linear-gradient(160deg,#3a1566,#E040FB)', earned:false },
-    { label:'Shore', bg:'linear-gradient(160deg,#4F91C9,#F2D49B)', earned:false },
-    { label:'Canopy', bg:'linear-gradient(160deg,#4FB8CE,#86C166)', earned:false }
+    { id:'meadow', label:'Meadow Awakes', icon:'meadow', bg:'linear-gradient(160deg,#7BC67E,#F5A623)', requirement:'Begin the adventure' },
+    { id:'pip20', label:'Pip Bond 20', icon:'firefly', bg:'linear-gradient(160deg,#E8822F,#FFC58C)', requirement:'Reach Bond 20 with Pip' },
+    { id:'brook', label:'Brook Discovered', icon:'brook', bg:'linear-gradient(160deg,#4FB8CE,#6B8E5C)', requirement:'Open Babbling Brook' },
+    { id:'firstSolve', label:'First Solve', icon:'stardust', bg:'linear-gradient(160deg,#F2B33D,#E89B5A)', requirement:'Solve your first puzzle' },
+    { id:'hollow', label:'Hollow Found', icon:'hollow', bg:'linear-gradient(160deg,#3D6B45,#7AFCD0)', requirement:'Open Mossy Hollow' },
+    { id:'cavern', label:'Cavern Glow', icon:'cavern', bg:'linear-gradient(160deg,#3a1566,#E040FB)', requirement:'Open Glow Cavern' },
+    { id:'shore', label:'Crystal Shore', icon:'shore', bg:'linear-gradient(160deg,#4F91C9,#F2D49B)', requirement:'Open Crystal Shore' },
+    { id:'canopy', label:'Autumn Canopy', icon:'canopy', bg:'linear-gradient(160deg,#4FB8CE,#86C166)', requirement:'Open Autumn Canopy' }
   ];
 
   decor = [
-    { name:'Flower Bush', cost:'50', color:'linear-gradient(160deg,#FFB7C5,#7BC67E)' },
-    { name:'Lantern Post', cost:'120', color:'linear-gradient(160deg,#FFE7A8,#F5A623)' },
-    { name:'Small Pond', cost:'180', color:'linear-gradient(160deg,#A8D8EA,#4FB8CE)' },
-    { name:'Firefly Jar', cost:'220', color:'linear-gradient(160deg,#E9C7FF,#9B59B6)' },
-    { name:'Wind Chime', cost:'90', color:'linear-gradient(160deg,#FFFFFF,#A5D6A7)' }
+    { id:'flower', icon:'flower', name:'Flower Bush', cost:50, color:'linear-gradient(160deg,#FFB7C5,#7BC67E)', tint:'#D56F8F' },
+    { id:'lanternPost', icon:'lantern', name:'Lantern Post', cost:120, color:'linear-gradient(160deg,#FFE7A8,#F5A623)', tint:'#C88712' },
+    { id:'pond', icon:'pond', name:'Small Pond', cost:180, color:'linear-gradient(160deg,#A8D8EA,#4FB8CE)', tint:'#3D91AA' },
+    { id:'fireflyJar', icon:'firefly', name:'Firefly Jar', cost:220, color:'linear-gradient(160deg,#E9C7FF,#9B59B6)', tint:'#71458E' },
+    { id:'chime', icon:'chime', name:'Wind Chime', cost:90, color:'linear-gradient(160deg,#FFFFFF,#A5D6A7)', tint:'#6B9B70' }
   ];
 
   state = {
@@ -290,7 +292,7 @@ class Component extends DCLogic {
     unlocked:{ meadow:true, brook:true, hollow:true, shore:false, cavern:false, canopy:false, heights:false, roots:false, highlands:false, skyroot:false, stardust:false },
     riOpen:false, riRegion:null,
     puzzleType:null, puzzleGuide:null, puzzleFromCodex:false, inLadder:false, regionLadder:null, regionStage:0, hintOpen:false, attempts:0, hintText:'',
-    cm:null, mem:null, flow:null, pat:null, snd:null, shp:null, wgt:null, lgt:null, seq:null, shd:null, rune:null, num:null, mtx:null, slide:null, hanoi:null, eqn:null, dots:null, rw:null,
+    cm:null, mem:null, flow:null, pat:null, snd:null, shp:null, wgt:null, lgt:null, seq:null, shd:null, rune:null, num:null, mtx:null, slide:null, hanoi:null, eqn:null, dots:null, firefly:null, rw:null,
     detailId:'pip', detailLine:'',
     quests:[
       { id:'q_collect', type:'Quick Quest', title:'Find 3 forest treasures', target:3, prog:1, vIdx:0, color:'#F5A623', kind:'acorns', amt:15, claimed:false },
@@ -298,6 +300,8 @@ class Component extends DCLogic {
       { id:'q_bond', type:'Bond Quest', title:'Spend time with a friend 3 times', target:3, prog:0, vIdx:0, color:'#5EA862', kind:'xp', amt:40, claimed:false }
     ],
     gifts:{ pip:true, mimi:true, tomo:false, luma:false, nori:false, sol:false },
+    decorOwned:{ flower:true },
+    decorPlaced:{ flower:true },
     finaleStage:0,
     rainPearls:0, eventDone:{}, eventOwned:{}, eventTrial:null,
     puzzlesSolved:0, minutesPlayed:120,
@@ -412,12 +416,31 @@ class Component extends DCLogic {
     else if(t==='hanoi') base.hanoi=this.initHanoi();
     else if(t==='eqn') base.eqn=this.initEqn();
     else if(t==='dots') base.dots=this.initDots();
+    else if(t==='firefly') base.firefly=this.initFirefly();
     this.setState(base);
     if(t==='pattern'){ clearTimeout(this._rw); this._rw=setTimeout(()=>this.recallWatch('pat'),500); }
     if(t==='sound'){ clearTimeout(this._rw); this._rw=setTimeout(()=>this.recallWatch('snd'),500); }
     if(t==='matrix'){ clearTimeout(this._rw); this._rw=setTimeout(()=>this.recallWatch('mtx'),500); }
   }
   fail(){ this.showToast(this.pick(this.pGuide().fail)); this.setState(s=>({attempts:s.attempts+1})); }
+
+  // ---------- firefly chase (touch-first visual sequencing) ----------
+  initFirefly(){
+    const spots=[[13,22],[34,13],[58,24],[82,16],[22,54],[48,45],[76,57],[14,80],[42,76],[70,83],[88,72]];
+    const picked=this.shuffle(spots).slice(0,7);
+    return { targets:picked.map((p,i)=>({ id:i, order:i+1, x:p[0], y:p[1], size:38+(i%3)*5 })), next:1, caught:[] };
+  }
+  fireflyTap(order){
+    const f={...this.state.firefly};
+    if(!f.targets) return;
+    if(order===f.next){
+      f.caught=[...f.caught,order]; f.next++;
+      this.setState({firefly:f});
+      if(f.next>f.targets.length){ clearTimeout(this._ff); this._ff=setTimeout(()=>this.solvePuzzle(),500); }
+    } else {
+      this.fail();
+    }
+  }
 
   // ---------- word match (spell the picture) ----------
   initWord(){
@@ -903,6 +926,38 @@ class Component extends DCLogic {
     this.setState(s=>({ gifts:{...s.gifts, [id]:false}, acorns:s.acorns+15, glowDust:s.glowDust+2, bonds:{...s.bonds,[id]:Math.min(100,(s.bonds[id]||0)+3)} }));
     this.showToast(this.creatures[id].name+'\u2019s gift  +15 Acorns +3 Bond');
   }
+  stokeCampfire(){
+    this.showToast('The campfire crackles brighter \u2728');
+  }
+  tapDecor(id){
+    const item=this.decor.find(d=>d.id===id); if(!item) return;
+    const owned=!!(this.state.decorOwned||{})[id];
+    if(!owned){
+      if(this.state.acorns<item.cost){ this.showToast('Need '+(item.cost-this.state.acorns)+' more Acorns'); return; }
+      this.setState(s=>({
+        acorns:s.acorns-item.cost,
+        decorOwned:{...(s.decorOwned||{}),[id]:true},
+        decorPlaced:{...(s.decorPlaced||{}),[id]:true}
+      }));
+      this.showToast(item.name+' unlocked and placed! \u2728');
+      return;
+    }
+    const placed=!!(this.state.decorPlaced||{})[id];
+    this.setState(s=>({decorPlaced:{...(s.decorPlaced||{}),[id]:!placed}}));
+    this.showToast(item.name+(placed?' stored in inventory':' placed in the Clearing'));
+  }
+  unlockAllContent(){
+    const unlocked={}; this.regions.forEach(r=>{ unlocked[r.id]=true; r.unlocked=true; });
+    const bonds={}; const gifts={}; this.creatureOrder.forEach(id=>{ bonds[id]=100; gifts[id]=true; });
+    const decorOwned={}; this.decor.forEach(d=>{ decorOwned[d.id]=true; });
+    const eventOwned={}; this.eventShopDefs.forEach(d=>{ eventOwned[d.id]=true; });
+    this.setState(s=>({
+      unlocked, bonds, gifts, decorOwned, decorPlaced:{...(s.decorPlaced||{}),flower:true},
+      eventOwned, xp:Math.max(s.xp,35000), rank:25, puzzlesSolved:Math.max(s.puzzlesSolved||0,1),
+      rainPearls:Math.max(s.rainPearls||0,100)
+    }));
+    this.showToast('All adventures, homes, and decorations are unlocked \u2728');
+  }
 
   // ---------- render ----------
   renderVals(){
@@ -968,7 +1023,7 @@ class Component extends DCLogic {
     const pg = this.creatures[s.puzzleGuide] || gc;
     const pcMeta = this.puzzleCodexList.find(p=>p.type===pt) || {name:cr.puzzleName, skill:''};
     const puzzleTitle = scr==='puzzle' ? ((isLadderPuzzle && s.puzzleDisplayName) ? s.puzzleDisplayName : pcMeta.name) : cr.puzzleName;
-    const isWord=scr==='puzzle'&&pt==='word', isTrace=scr==='puzzle'&&pt==='trace', isOdd=scr==='puzzle'&&pt==='odd', isCount=scr==='puzzle'&&pt==='count', isMaze=scr==='puzzle'&&pt==='maze';
+    const isWord=scr==='puzzle'&&pt==='word', isTrace=scr==='puzzle'&&pt==='trace', isOdd=scr==='puzzle'&&pt==='odd', isCount=scr==='puzzle'&&pt==='count', isMaze=scr==='puzzle'&&pt==='maze', isFirefly=scr==='puzzle'&&pt==='firefly';
     const isShape=scr==='puzzle'&&pt==='shape', isSequence=scr==='puzzle'&&pt==='sequence', isWeight=scr==='puzzle'&&pt==='weight',
           isLight=scr==='puzzle'&&pt==='light', isShadow=scr==='puzzle'&&pt==='shadow', isRune=scr==='puzzle'&&pt==='rune',
           isPattern=scr==='puzzle'&&pt==='pattern', isSound=scr==='puzzle'&&pt==='sound', isMatrix=scr==='puzzle'&&pt==='matrix',
@@ -976,6 +1031,7 @@ class Component extends DCLogic {
     const isDemo = false;
     let cmBuckets=[], cmTray=[], cmEmpty=false, memCards=[], memMoves=0, demoName='', demoDesc='', demoSkill='', flowCells=[];
     let dotsList=[], dotsLine='', dotsLabel='';
+    let fireflyTargets=[], fireflyProgress='';
     let shapeSlots=[], shapeTray=[], seqTiles=[], seqHint='', wgtWeights=[], wgtPlaced=[], wgtSum=0, wgtTarget=0,
         lightMirrors=[], lightDone=false, shadowTarget=[], shadowCur=[], shadowSolved=false, runeGlyph='', runeOpts=[], runeProgress='',
         recallPads=[], recallPhase='', recallLabel='', recallField='',
@@ -998,6 +1054,13 @@ class Component extends DCLogic {
         const segs=cell.sides.map(side=>this.flowSeg(side,col));
         flowCells.push({ key:r+'-'+c, hub:col, cellBg: fill?'rgba(84,199,224,.12)':'rgba(255,248,239,.07)', cellShadow:'inset 0 0 0 2px rgba(255,255,255,.12)', segs, onTap:()=>this.rotateCell(r,c) });
       } }
+    }
+    if(isFirefly && s.firefly){
+      fireflyProgress='Firefly '+Math.min(s.firefly.next,s.firefly.targets.length)+' of '+s.firefly.targets.length;
+      fireflyTargets=s.firefly.targets.map(t=>({
+        ...t, active:t.order===s.firefly.next, caught:s.firefly.caught.includes(t.order),
+        onTap:()=>this.fireflyTap(t.order)
+      }));
     }
     if(isShape && s.shp){
       shapeSlots=s.shp.slots.map(sl=>({ id:sl.id, cp:sl.cp, br:sl.br, filled:sl.filled, holeDisp: sl.filled?'none':'block', onTap:()=>this.shapeDrop(sl.id) }));
@@ -1134,7 +1197,9 @@ class Component extends DCLogic {
     // sanctuary
     const sanctuaryZones=this.creatureOrder.map(id=>{ const c=this.creatures[id]; const b=s.bonds[id]||0; const need=id==='sol'?100:10; const unlocked=b>=need;
       return { home:c.name+'\u2019s Home', body:c.body, glow:c.glow, status: unlocked?'Open \u00b7 Bond '+b:'Locked \u00b7 Bond '+need, op:unlocked?'1':'.55', hasGift: unlocked && s.gifts[id], onGift:()=>this.collectGift(id) }; });
-    const decorItems=this.decor;
+    const decorItems=this.decor.map(d=>{ const owned=!!(s.decorOwned||{})[d.id]; const placed=owned&&!!(s.decorPlaced||{})[d.id];
+      return {...d, owned, placed, status:placed?'Placed':(owned?'In inventory':d.cost+' Acorns'), onTap:()=>this.tapDecor(d.id)}; });
+    const placedDecorItems=decorItems.filter(d=>d.placed);
 
     // journey
     const curRank=this.rankForXp(s.xp); const nextR=this.nextRank(s.xp);
@@ -1144,7 +1209,14 @@ class Component extends DCLogic {
     const xpToNext = nextR ? (nextR.xp - s.xp) : 0;
     const rankLadder=this.ranks.map(r=>{ const reached=s.xp>=r.xp; const current=r.num===rankNum;
       return { num:r.num, name:r.name, xp:r.xp, reached, rowBg: current?'#eaf2ec':'transparent', dotBg: reached?'linear-gradient(180deg,#5EA862,#3f7d47)':'#e7ddcb', dotFg: reached?'#fff':'#9a8a76' }; });
-    const scrap=this.scrapbook.map(c=>({ label:c.label, bg:c.bg, op:c.earned?'1':'.5', earned:c.earned, locked:!c.earned }));
+    const scrapbookEarned=(id)=> id==='meadow' ? !!s.unlocked.meadow
+      : id==='pip20' ? (s.bonds.pip||0)>=20
+      : id==='firstSolve' ? (s.puzzlesSolved||0)>=1
+      : !!s.unlocked[id];
+    const scrap=this.scrapbook.map(c=>{ const earned=scrapbookEarned(c.id); return {
+      ...c, op:earned?'1':'.58', earned, locked:!earned,
+      onTap:()=>this.showToast(earned?('Memory: '+c.label):c.requirement)
+    }; });
     const ageBands=[{lo:4,hi:7,label:'4\u20137'},{lo:8,hi:11,label:'8\u201311'},{lo:12,hi:15,label:'12\u201316'},{lo:16,hi:17,label:'16\u201318'},{lo:18,hi:99,label:'18+'}];
     const ageCoverage=ageBands.map(b=>({ label:b.label, count:this.puzzleCodexList.filter(p=>p.ageMin<=b.hi && p.ageMax>=b.lo).length }));
     const codexCards=this.puzzleCodexList.map(p=>({ type:p.type, name:p.name, skill:p.skill, color:p.color, colorDark:p.colorDark,
@@ -1207,6 +1279,7 @@ class Component extends DCLogic {
     const parentSkills=skillOrder.map(k=>({ name:k, count:s.skills[k]||0, pct:Math.round((s.skills[k]||0)/maxSkill*100), color:this.skillColors[k] }));
     let favId=this.creatureOrder[0]; this.creatureOrder.forEach(id=>{ if((s.bonds[id]||0)>(s.bonds[favId]||0)) favId=id; });
     const favC=this.creatures[favId]; const favName=favC.name, favBody=favC.body, favGlow=favC.glow, favBond=s.bonds[favId]||0;
+    const allUnlocked=this.regions.every(r=>!!s.unlocked[r.id]) && this.decor.every(d=>!!(s.decorOwned||{})[d.id]);
 
     return {
       isTitle:scr==='title', isMap:scr==='map', isRegion:scr==='region', isPuzzle:scr==='puzzle', isReward:scr==='reward',
@@ -1217,6 +1290,7 @@ class Component extends DCLogic {
       rwIsEvent:!!(s.rw&&s.rw.isEvent), openEvent:()=>this.openEvent(),
       dailyOpen:s.dailyOpen, dailyDays, dailyCanClaim, dailyClaimedToday, claimDaily:()=>this.claimDaily(), closeDaily:()=>this.closeDaily(), openDaily:()=>this.openDaily(),
       safetyBadges, parentStats, parentSkills, favName, favBody, favGlow, favBond, openParent:()=>this.openParent(),
+      allUnlocked, unlockAllContent:()=>this.unlockAllContent(),
       finaleStars, finaleGuides, finaleCaption, finaleGuidesOp, finaleMoonA, finaleShowTitle, finaleEnded, finaleShowSkip,
       finaleSkip:()=>this.finaleSkip(), finaleDone:()=>this.finaleDone(),
       finaleHasReplay, playFinale:()=>this.playFinale(),
@@ -1237,6 +1311,7 @@ class Component extends DCLogic {
       traceDown:(e)=>this.traceDown(e), traceMove:(e)=>this.traceMove(e), traceUp:()=>this.traceUp(),
       isOdd, oddCells, isCount, countItems, countOptions, countEmoji,
       isMaze, mazeCells, mazeUp:()=>this.mazeMove(-1,0), mazeDown:()=>this.mazeMove(1,0), mazeLeft:()=>this.mazeMove(0,-1), mazeRight:()=>this.mazeMove(0,1),
+      isFirefly, fireflyTargets, fireflyProgress,
       markerPuzzleName, showPuzzleTier, puzzleTierLabel, puzzleTierColor,
       wgtWeights, wgtPlaced, wgtSum, wgtTarget, wgtTilt,
       lightMirrors, lightGem, lightGemGlow, lightHintOp, shadowCurDeg, shadowTargetDeg,
@@ -1248,8 +1323,8 @@ class Component extends DCLogic {
       rw:s.rw||{}, rewardStars, rewardContinue:()=>this.rewardContinue(),
       creatureCards,
       dc, dcStages, dcLines, dcMilestones, addBond:()=>this.addBond(),
-      sanctuaryZones, decorItems,
-      rankNum, rankName, xpPct, xpInto, xpSpan, xpToNext, xpTotal:s.xp, nextRankName: nextR?nextR.name:'Max', quests:questCards, rankLadder, scrapbook:scrap, puzzleCodexList:codexCards, ageCoverage, finaleHasReplay2:finaleHasReplay,      toastShow:!!s.toast, toastText:s.toast||''
+      sanctuaryZones, decorItems, placedDecorItems, stokeCampfire:()=>this.stokeCampfire(),
+      rankNum, rankName, xpPct, xpInto, xpSpan, xpToNext, xpTotal:s.xp, nextRankName: nextR?nextR.name:'Max', quests:questCards, rankLadder, scrapbook:scrap, puzzleCodexList:codexCards, puzzleTypeCount:this.puzzleCodexList.length, ageCoverage, finaleHasReplay2:finaleHasReplay,      toastShow:!!s.toast, toastText:s.toast||''
     };
   }
 
@@ -1257,6 +1332,7 @@ class Component extends DCLogic {
     const m={ flow:'Rotate pipe segments to connect the water source to its destination. Tap a piece to turn it 90\u00b0.',
       light:'Rotate crystals and mirrors to bend a beam of light onto every glowing target.',
       shadow:'Rotate a 3D object until its shadow matches the silhouette on the cavern wall.',
+      firefly:'Follow the moving glow and catch the numbered fireflies in order.',
       wind:'Read the wind currents and trace a safe path through the swirling autumn leaves.',
       mechanical:'Set the windmill cogs turning in the right order to open the sky bridge.',
       rune:'Decipher the ancient symbols by matching patterns to the runes you\u2019ve learned.',

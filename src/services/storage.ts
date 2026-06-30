@@ -8,7 +8,7 @@ const SAVE_VERSION = 1;
 const PERSIST_KEYS: (keyof SaveData)[] = [
   'acorns', 'glowDust', 'xp', 'rank', 'bonds', 'unlocked', 'puzzlesSolved',
   'minutesPlayed', 'dailyClaimed', 'dailyShown', 'skills', 'quests', 'gifts',
-  'eventDone', 'eventOwned', 'rainPearls', 'finaleSeen',
+  'eventDone', 'eventOwned', 'decorOwned', 'decorPlaced', 'rainPearls', 'finaleSeen',
 ];
 
 function snapshot(state: GameState): SaveData {
