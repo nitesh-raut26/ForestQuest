@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import Svg, { Polyline } from 'react-native-svg';
 import RadialOrb from '../components/RadialOrb';
 import ShapeIcon from '../components/ShapeIcon';
@@ -7,6 +7,71 @@ import { FONT } from '../theme/fonts';
 import { firstGradientColor, parseGradientColors } from '../utils/parseGradient';
 
 interface Props { vals: Record<string, any> }
+
+function FireflyTarget({ target }: { target: any }) {
+  const pulse = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const loop = Animated.loop(Animated.sequence([
+      Animated.timing(pulse, { toValue: 1, duration: 620, useNativeDriver: true }),
+      Animated.timing(pulse, { toValue: 0, duration: 620, useNativeDriver: true }),
+    ]));
+    loop.start();
+    return () => loop.stop();
+  }, [pulse]);
+
+  if (target.caught) {
+    return (
+      <View style={[s.fireflyCaught, { left: `${target.x}%`, top: `${target.y}%` }]}>
+        <Text style={s.fireflyCaughtText}>✓</Text>
+      </View>
+    );
+  }
+
+  return (
+    <Animated.View
+      style={[
+        s.fireflyTargetWrap,
+        {
+          left: `${target.x}%`, top: `${target.y}%`, width: target.size, height: target.size,
+          opacity: target.active ? 1 : 0.42,
+          transform: [
+            { translateX: -target.size / 2 },
+            { translateY: -target.size / 2 },
+            { scale: pulse.interpolate({ inputRange: [0, 1], outputRange: target.active ? [0.92, 1.12] : [0.96, 1.02] }) },
+          ],
+        },
+      ]}
+    >
+      <TouchableOpacity
+        onPress={target.onTap}
+        activeOpacity={0.72}
+        style={[s.fireflyTarget, target.active && s.fireflyTargetActive]}
+        accessibilityRole="button"
+        accessibilityLabel={`Firefly ${target.order}${target.active ? ', next' : ''}`}
+      >
+        <View style={s.fireflyWingLeft} />
+        <View style={s.fireflyWingRight} />
+        <View style={s.fireflyBody} />
+        <Text style={s.fireflyNumber}>{target.order}</Text>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
+
+// ── Firefly Chase ────────────────────────────────────────────────────────────
+export function FireflyPuzzle({ vals }: Props) {
+  const targets = vals.fireflyTargets || [];
+  return (
+    <View style={s.wrapper}>
+      <Text style={s.intro}>Catch the glowing fireflies in number order. The brightest one is next!</Text>
+      <Text style={s.fireflyProgress}>{vals.fireflyProgress}</Text>
+      <View style={s.fireflyField}>
+        {targets.map((target: any) => <FireflyTarget key={target.id} target={target} />)}
+      </View>
+    </View>
+  );
+}
 
 // ── Colour Match ─────────────────────────────────────────────────────────────
 export function ColourPuzzle({ vals }: Props) {
@@ -622,6 +687,36 @@ const s = StyleSheet.create({
   intro: { fontFamily: FONT.nunito.semibold, fontSize: 13, color: '#fff', textAlign: 'center', opacity: 0.9, maxWidth: 270 },
   sub: { fontFamily: FONT.nunito.semibold, fontSize: 13, color: 'rgba(255,255,255,0.7)', textAlign: 'center' },
   row: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 12 },
+  // firefly chase
+  fireflyProgress: { fontFamily: FONT.baloo.bold, fontSize: 14, color: '#FFE98A' },
+  fireflyField: {
+    width: 300, height: 300, borderRadius: 26, position: 'relative', overflow: 'hidden',
+    backgroundColor: 'rgba(33,74,58,0.55)', borderWidth: 1.5, borderColor: 'rgba(255,233,138,0.3)',
+  },
+  fireflyTargetWrap: { position: 'absolute' },
+  fireflyTarget: {
+    flex: 1, borderRadius: 999, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(255,224,94,0.32)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.4)',
+  },
+  fireflyTargetActive: {
+    backgroundColor: '#F6B82E', borderColor: '#FFF5B8',
+    shadowColor: '#FFE56E', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 18, elevation: 12,
+  },
+  fireflyWingLeft: {
+    position: 'absolute', left: -7, width: 19, height: 12, borderRadius: 10,
+    backgroundColor: 'rgba(213,246,238,0.78)', transform: [{ rotate: '-28deg' }],
+  },
+  fireflyWingRight: {
+    position: 'absolute', right: -7, width: 19, height: 12, borderRadius: 10,
+    backgroundColor: 'rgba(213,246,238,0.78)', transform: [{ rotate: '28deg' }],
+  },
+  fireflyBody: { position: 'absolute', width: 11, height: 24, borderRadius: 7, backgroundColor: '#6B4B22' },
+  fireflyNumber: { fontFamily: FONT.baloo.extrabold, fontSize: 13, color: '#fff', zIndex: 2 },
+  fireflyCaught: {
+    position: 'absolute', width: 24, height: 24, marginLeft: -12, marginTop: -12, borderRadius: 12,
+    backgroundColor: '#3f7d47', alignItems: 'center', justifyContent: 'center',
+  },
+  fireflyCaughtText: { color: '#fff', fontSize: 13, fontWeight: '900' },
   // colour
   bucketWrap: { alignItems: 'center', gap: 8, width: 104 },
   bucket: { width: '100%', height: 84, borderRadius: 18, borderBottomLeftRadius: 26, borderBottomRightRadius: 26, alignItems: 'center', justifyContent: 'flex-end', overflow: 'hidden' },
