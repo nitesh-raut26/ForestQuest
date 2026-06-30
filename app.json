@@ -1,8 +1,9 @@
 {
   "expo": {
-    "name": "forest-quest-expo",
-    "slug": "forest-quest-expo",
+    "name": "Forest Quest",
+    "slug": "forest-quest",
     "version": "1.0.0",
+    "description": "An interactive forest adventure game.",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -20,6 +21,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-audio",
+      "expo-splash-screen",
+      "expo-font"
+    ]
   }
 }
