@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+// MapScreen component
 import {
   View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions, Modal, Pressable,
+  Animated, Easing,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Polyline } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CurrencyPills from '../components/CurrencyPills';
-import RadialOrb from '../components/RadialOrb';
 import BottomNav from '../components/BottomNav';
+import CharacterArt from '../components/CharacterArt';
+import GameIcon from '../components/GameIcon';
 import { FONT } from '../theme/fonts';
 
 const { width: W, height: H } = Dimensions.get('window');
@@ -40,11 +43,135 @@ interface Props {
   vals: Record<string, any>;
 }
 
+function RegionIsland({ node }: { node: MapNode }) {
+  return (
+    <TouchableOpacity
+      style={[styles.node, {
+        left: node.x / 100 * MAP_W - 47,
+        top: node.y / 100 * MAP_H - 35,
+        opacity: node.nodeOpacity,
+      }]}
+      onPress={node.onTap}
+      activeOpacity={0.82}
+      accessibilityRole="button"
+      accessibilityLabel={`${node.name}${node.locked ? ', locked' : ', open'}`}
+    >
+      <View style={styles.island}>
+        <View style={styles.islandShadow} />
+        <View style={styles.islandRock} />
+        <View style={styles.islandSoil} />
+        <LinearGradient
+          colors={node.locked ? ['#9b9b91', '#6f746d'] : [node.glow, node.color]}
+          start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }}
+          style={styles.islandTop}
+        >
+          <GameIcon kind={node.id} size={30} color="#FFFFFF" secondary={node.locked ? '#d4d4cd' : '#FFE98A'} />
+        </LinearGradient>
+        <View style={[styles.nodeNumber, { backgroundColor: node.locked ? '#565a58' : node.color }]}>
+          <Text style={styles.nodeNum}>{node.num}</Text>
+        </View>
+        {node.locked && (
+          <View style={styles.lockBadge}>
+            <View style={styles.lockShackle} />
+            <View style={styles.lockBody} />
+          </View>
+        )}
+      </View>
+      <View style={styles.nodeLabel}>
+        <Text style={styles.nodeName} numberOfLines={2}>{node.name}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+function MapExplorer({
+  nodes,
+  currentId,
+  shouldJump,
+  unlockedName,
+}: {
+  nodes: MapNode[];
+  currentId?: string;
+  shouldJump: boolean;
+  unlockedName?: string;
+}) {
+  const current = nodes.find((n) => n.id === currentId) || nodes.find((n) => !n.locked) || nodes[0];
+  const next = current && nodes.find((n) => n.num === current.num + 1 && !n.locked);
+  const destination = shouldJump && next ? next : current;
+  const startX = current ? current.x / 100 * MAP_W : 0;
+  const startY = current ? current.y / 100 * MAP_H : 0;
+  const position = useRef(new Animated.ValueXY({ x: startX, y: startY })).current;
+  const hop = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(1)).current;
+  const [showArrival, setShowArrival] = useState(false);
+
+  useEffect(() => {
+    if (!current || !destination) return;
+    position.setValue({ x: startX, y: startY });
+    hop.setValue(0);
+    scale.setValue(1);
+    setShowArrival(false);
+
+    if (!shouldJump || !next) return;
+
+    Animated.parallel([
+      Animated.timing(position, {
+        toValue: { x: next.x / 100 * MAP_W, y: next.y / 100 * MAP_H },
+        duration: 1250,
+        easing: Easing.inOut(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.sequence([
+        Animated.timing(hop, { toValue: -72, duration: 560, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+        Animated.timing(hop, { toValue: 0, duration: 690, easing: Easing.bounce, useNativeDriver: true }),
+      ]),
+      Animated.sequence([
+        Animated.timing(scale, { toValue: 1.12, duration: 560, useNativeDriver: true }),
+        Animated.timing(scale, { toValue: 1, duration: 690, useNativeDriver: true }),
+      ]),
+    ]).start(({ finished }) => {
+      if (finished) setShowArrival(true);
+    });
+  }, [current?.id, destination?.id, shouldJump]);
+
+  if (!current) return null;
+
+  return (
+    <>
+      <Animated.View
+        pointerEvents="none"
+        style={[styles.mapExplorer, {
+          transform: [
+            ...position.getTranslateTransform(),
+            { translateY: hop },
+            { scale },
+          ],
+        }]}
+      >
+        <View style={styles.explorerGroundShadow} />
+        <CharacterArt id="ari" size={70} />
+      </Animated.View>
+      {showArrival && (
+        <View style={styles.arrivalBubble} pointerEvents="none">
+          <View style={styles.arrivalPortrait}>
+            <CharacterArt id="ari" size={54} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.arrivalName}>Ari · Trail Guide</Text>
+            <Text style={styles.arrivalText}>New path! {unlockedName || next?.name} is open. Let’s leap in!</Text>
+          </View>
+        </View>
+      )}
+    </>
+  );
+}
+
 export default function MapScreen({ vals }: Props) {
   const insets = useSafeAreaInsets();
   const mapNodes: MapNode[] = vals.mapNodes || [];
   const ri: RegionInfo | null = vals.ri;
   const navItems = vals.navItems || [];
+  const arrivalJump = useRef(!!vals.mapArrivalFromUnlock).current;
 
   // Scale x by MAP_W, y by MAP_H — map is rectangular, not square
   const polylinePoints = mapNodes.map(n =>
@@ -64,40 +191,30 @@ export default function MapScreen({ vals }: Props) {
         </View>
 
         {/* Map container */}
-        <View style={styles.mapBox}>
+          <View style={styles.mapBox}>
           <LinearGradient
-            colors={['#9fd0a6', '#6fb6c4', '#7d6fb0', '#caa26e']}
-            locations={[0, 0.36, 0.66, 1]}
+            colors={['#8bd1da', '#7ebda2', '#7898bd', '#715d8e']}
+            locations={[0, 0.36, 0.7, 1]}
             start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }}
             style={StyleSheet.absoluteFill}
           />
+          <View style={[styles.cloud, { width: 112, left: -24, top: 42 }]} />
+          <View style={[styles.cloud, { width: 86, right: -10, top: 176, opacity: 0.35 }]} />
+          <View style={[styles.mapRidge, { width: 190, height: 92, left: -48, bottom: 34, backgroundColor: '#557f6a' }]} />
+          <View style={[styles.mapRidge, { width: 220, height: 118, right: -62, bottom: 168, backgroundColor: '#526c79' }]} />
+          <View style={[styles.mapRidge, { width: 165, height: 82, left: 92, top: -28, backgroundColor: '#5c6482' }]} />
           <Svg width={MAP_W} height={MAP_H} style={StyleSheet.absoluteFill}>
-            <Polyline points={polylinePoints} fill="none" stroke="rgba(255,255,255,0.65)" strokeWidth="2.4" strokeDasharray="6 7" strokeLinecap="round" />
+            <Polyline points={polylinePoints} fill="none" stroke="rgba(28,61,72,0.35)" strokeWidth="13" strokeLinecap="round" strokeLinejoin="round" />
+            <Polyline points={polylinePoints} fill="none" stroke="rgba(231,250,255,0.82)" strokeWidth="3" strokeDasharray="7 8" strokeLinecap="round" strokeLinejoin="round" />
           </Svg>
 
-          {mapNodes.map((n) => (
-            <TouchableOpacity
-              key={n.id}
-              style={[styles.node, {
-                // Center the 88px node container on x, place orb center at y
-                left: n.x / 100 * MAP_W - 44,
-                top: n.y / 100 * MAP_H - 31,
-                opacity: n.nodeOpacity,
-              }]}
-              onPress={n.onTap}
-              activeOpacity={0.8}
-            >
-              <RadialOrb size={46} glow={n.glow} body={n.color} style={styles.nodeOrb}>
-                <Text style={styles.nodeNum}>{n.num}</Text>
-                {n.locked && (
-                  <View style={styles.lockBadge}>
-                    <Text style={{ fontSize: 8 }}>🔒</Text>
-                  </View>
-                )}
-              </RadialOrb>
-              <Text style={styles.nodeName}>{n.name}</Text>
-            </TouchableOpacity>
-          ))}
+          {mapNodes.map((n) => <RegionIsland key={n.id} node={n} />)}
+          <MapExplorer
+            nodes={mapNodes}
+            currentId={vals.cr?.id}
+            shouldJump={arrivalJump}
+            unlockedName={vals.unlockTargetName}
+          />
         </View>
 
         {/* Season banner + regions-open card */}
@@ -125,7 +242,9 @@ export default function MapScreen({ vals }: Props) {
             <ScrollView contentContainerStyle={styles.sheetContent} showsVerticalScrollIndicator={false}>
               <View style={styles.sheetHandle} />
               <View style={styles.sheetHeader}>
-                <RadialOrb size={58} glow={ri.glow} body={ri.primary} style={styles.sheetIcon} />
+                <View style={[styles.sheetIcon, { backgroundColor: ri.glow }]}>
+                  <CharacterArt name={ri.guideName} size={72} />
+                </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.sheetTitle}>{ri.name}</Text>
                   <Text style={styles.sheetSub}>Guide: {ri.guideName} · {ri.difficulty}</Text>
@@ -160,7 +279,9 @@ export default function MapScreen({ vals }: Props) {
                     key={i} onPress={ch.onPlay} disabled={ch.locked} activeOpacity={0.8}
                     style={[styles.challengeBtn, { backgroundColor: ch.tierBg, borderLeftColor: ch.tierColor, opacity: parseFloat(ch.op) }]}
                   >
-                    <LinearGradient colors={[ch.color, ch.colorDark]} style={styles.challengeIcon} />
+                    <LinearGradient colors={[ch.color, ch.colorDark]} style={styles.challengeIcon}>
+                      <GameIcon kind={ch.type} size={23} color="#fff" secondary="#FFE98A" />
+                    </LinearGradient>
                     <Text style={styles.challengeName} numberOfLines={2}>{ch.name}</Text>
                     {ch.locked && <Text style={{ fontSize: 11 }}>🔒</Text>}
                   </TouchableOpacity>
@@ -191,21 +312,80 @@ const styles = StyleSheet.create({
   sub: { fontFamily: FONT.nunito.semibold, fontSize: 13, color: '#7a6a58', marginTop: 2 },
   mapBox: {
     width: MAP_W, height: MAP_H, borderRadius: 26, overflow: 'hidden',
+    borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)',
     shadowColor: '#3c3228', shadowOffset: { width: 0, height: 14 }, shadowOpacity: 0.3, shadowRadius: 24, elevation: 8,
   },
-  node: { position: 'absolute', alignItems: 'center', width: 88 },
-  nodeOrb: {
-    shadowColor: '#28201a', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.35, shadowRadius: 8, elevation: 6,
+  cloud: {
+    position: 'absolute', height: 34, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.42)',
+    shadowColor: '#fff', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 18,
   },
-  nodeNum: { fontFamily: FONT.baloo.extrabold, fontSize: 16, color: '#fff', textShadowColor: 'rgba(0,0,0,0.3)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 },
+  mapRidge: {
+    position: 'absolute', borderRadius: 999, opacity: 0.42,
+    transform: [{ rotate: '-11deg' }],
+  },
+  node: { position: 'absolute', alignItems: 'center', width: 94, zIndex: 3 },
+  island: { width: 78, height: 57, alignItems: 'center' },
+  islandShadow: {
+    position: 'absolute', bottom: 2, width: 72, height: 24, borderRadius: 36,
+    backgroundColor: 'rgba(30,36,40,0.34)', transform: [{ scaleX: 1.15 }],
+  },
+  islandRock: {
+    position: 'absolute', bottom: 8, width: 65, height: 31, borderRadius: 33,
+    backgroundColor: '#665647',
+  },
+  islandSoil: {
+    position: 'absolute', bottom: 13, width: 72, height: 34, borderRadius: 36,
+    backgroundColor: '#977455',
+  },
+  islandTop: {
+    position: 'absolute', top: 1, width: 74, height: 42, borderRadius: 37,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2, borderColor: 'rgba(255,255,255,0.55)',
+    shadowColor: '#1f2d2a', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.34, shadowRadius: 9, elevation: 5,
+  },
+  nodeNumber: {
+    position: 'absolute', top: -3, right: 1, width: 21, height: 21, borderRadius: 11,
+    alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#fff',
+  },
+  nodeNum: { fontFamily: FONT.baloo.extrabold, fontSize: 10, color: '#fff' },
   lockBadge: {
-    position: 'absolute', right: -3, bottom: -3, width: 20, height: 20,
-    borderRadius: 10, backgroundColor: '#5b4636', alignItems: 'center', justifyContent: 'center',
+    position: 'absolute', left: 2, top: 3, width: 20, height: 20,
+    borderRadius: 10, backgroundColor: '#434947', alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.8)',
+  },
+  lockShackle: {
+    position: 'absolute', top: 3, width: 9, height: 8, borderWidth: 2, borderColor: '#fff', borderBottomWidth: 0,
+    borderTopLeftRadius: 5, borderTopRightRadius: 5,
+  },
+  lockBody: { position: 'absolute', bottom: 3, width: 11, height: 8, borderRadius: 2, backgroundColor: '#fff' },
+  nodeLabel: {
+    marginTop: -2, minHeight: 24, maxWidth: 92, borderRadius: 10,
+    backgroundColor: 'rgba(28,35,38,0.68)', paddingHorizontal: 7, paddingVertical: 3,
   },
   nodeName: {
-    fontFamily: FONT.baloo.extrabold, fontSize: 10.5, color: '#fff', textAlign: 'center', marginTop: 5,
-    textShadowColor: 'rgba(40,30,20,0.55)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3,
+    fontFamily: FONT.nunito.extrabold, fontSize: 8.5, lineHeight: 10, color: '#fff', textAlign: 'center',
   },
+  mapExplorer: {
+    position: 'absolute', left: -35, top: -68, zIndex: 8, width: 70, height: 70,
+    alignItems: 'center', justifyContent: 'flex-end',
+  },
+  explorerGroundShadow: {
+    position: 'absolute', bottom: 0, width: 38, height: 10, borderRadius: 19,
+    backgroundColor: 'rgba(20,25,24,0.38)',
+  },
+  arrivalBubble: {
+    position: 'absolute', left: 12, right: 12, top: 11, zIndex: 12,
+    flexDirection: 'row', alignItems: 'center', gap: 9,
+    backgroundColor: 'rgba(255,248,239,0.96)', borderRadius: 18, paddingVertical: 8, paddingHorizontal: 10,
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.95)',
+    shadowColor: '#23332e', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.35, shadowRadius: 14, elevation: 8,
+  },
+  arrivalPortrait: {
+    width: 48, height: 48, borderRadius: 24, overflow: 'hidden', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#F7D87C',
+  },
+  arrivalName: { fontFamily: FONT.nunito.extrabold, fontSize: 9.5, color: '#B46B13', textTransform: 'uppercase', letterSpacing: 0.6 },
+  arrivalText: { fontFamily: FONT.baloo.bold, fontSize: 13, lineHeight: 15, color: '#3a2a1c' },
   bottomRow: { flexDirection: 'row', gap: 8, marginTop: 16 },
   eventCard: { borderRadius: 16, padding: 14 },
   eventLabel: { fontFamily: FONT.nunito.bold, fontSize: 11, color: '#9FC8FF', textTransform: 'uppercase', letterSpacing: 0.5 },
@@ -223,7 +403,10 @@ const styles = StyleSheet.create({
   sheetContent: { paddingHorizontal: 22, paddingTop: 8, paddingBottom: 28 },
   sheetHandle: { width: 42, height: 5, borderRadius: 3, backgroundColor: '#ddd0bd', alignSelf: 'center', marginVertical: 6, marginBottom: 16 },
   sheetHeader: { flexDirection: 'row', gap: 14, alignItems: 'flex-start' },
-  sheetIcon: { borderRadius: 18, shadowColor: 'rgba(40,30,20,0.4)', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 1, shadowRadius: 14, elevation: 5 },
+  sheetIcon: {
+    width: 64, height: 64, borderRadius: 20, overflow: 'hidden', alignItems: 'center', justifyContent: 'center',
+    shadowColor: 'rgba(40,30,20,0.4)', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 1, shadowRadius: 14, elevation: 5,
+  },
   sheetTitle: { fontFamily: FONT.baloo.bold, fontSize: 22, color: '#3a2a1c' },
   sheetSub: { fontFamily: FONT.nunito.bold, fontSize: 12, color: '#9a8a76', marginTop: 3 },
   sheetLock: { fontFamily: FONT.nunito.extrabold, fontSize: 10.5, color: '#b5660c', backgroundColor: '#fbeccf', alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 12, marginTop: 6, overflow: 'hidden' },
@@ -238,7 +421,7 @@ const styles = StyleSheet.create({
     width: '47.5%', flexDirection: 'row', alignItems: 'center', gap: 9,
     borderRadius: 13, borderLeftWidth: 4, paddingVertical: 9, paddingRight: 8, paddingLeft: 8,
   },
-  challengeIcon: { width: 24, height: 24, borderRadius: 7 },
+  challengeIcon: { width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   challengeName: { flex: 1, fontFamily: FONT.nunito.extrabold, fontSize: 12, color: '#3a2a1c', lineHeight: 14 },
   enterBtn: { borderRadius: 30, paddingVertical: 16, alignItems: 'center', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 1, shadowRadius: 0, elevation: 6 },
   enterBtnText: { fontFamily: FONT.baloo.bold, color: '#fff', fontSize: 18 },
