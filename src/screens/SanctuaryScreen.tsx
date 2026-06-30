@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BottomNav from '../components/BottomNav';
 import CurrencyPills from '../components/CurrencyPills';
 import RadialOrb from '../components/RadialOrb';
@@ -31,11 +32,12 @@ function GiftButton({ onPress }: { onPress?: () => void }) {
 }
 
 export default function SanctuaryScreen({ vals }: Props) {
+  const insets = useSafeAreaInsets();
   const zones = vals.sanctuaryZones || [];
   const decor = vals.decorItems || [];
   return (
     <LinearGradient colors={['#bfe0c4', '#9bc9a4', '#7aa97f']} locations={[0, 0.44, 1]} style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 90 + insets.bottom }]}>
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>Your Sanctuary</Text>
@@ -89,7 +91,7 @@ export default function SanctuaryScreen({ vals }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { paddingTop: 56, paddingBottom: 100, paddingHorizontal: 16 },
+  content: { paddingTop: 56, paddingHorizontal: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 16 },
   title: { fontFamily: FONT.baloo.bold, fontSize: 26, color: '#2f4a32' },
   sub: { fontFamily: FONT.nunito.semibold, fontSize: 13, color: '#3f5e42', marginTop: 2 },

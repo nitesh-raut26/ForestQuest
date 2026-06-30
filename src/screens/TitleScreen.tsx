@@ -8,8 +8,6 @@ import { FONT } from '../theme/fonts';
 
 const { width: W, height: H } = Dimensions.get('window');
 
-// Matches gameLogic.js's `fireflies` (renderVals) exactly — kept as a fallback
-// in case vals.fireflies is ever unavailable before the logic mounts.
 const FALLBACK_FIREFLIES = [
   { x: 22, y: 60, dur: 5, delay: 0 }, { x: 70, y: 48, dur: 6.4, delay: 0.6 },
   { x: 42, y: 70, dur: 5.6, delay: 1.2 }, { x: 84, y: 64, dur: 6, delay: 0.3 },
@@ -34,7 +32,8 @@ function Firefly({ x, y, dur, delay }: { x: number; y: number; dur: number; dela
       style={[
         styles.firefly,
         {
-          left: `${x}%`, top: `${y}%`,
+          left: `${x}%` as unknown as number,
+          top: `${y}%` as unknown as number,
           opacity: t.interpolate({ inputRange: [0, 1], outputRange: [0.55, 1] }),
           transform: [
             { translateY: t.interpolate({ inputRange: [0, 1], outputRange: [0, -22] }) },
@@ -70,6 +69,7 @@ export default function TitleScreen({ vals, onBegin }: Props) {
       locations={[0, 0.38, 0.7, 1]}
       style={styles.container}
     >
+      {/* Hills — match web template's radial-gradient domes */}
       <HillShape
         width={W + 200} height={H * 0.46} domeRatio={0.22} cx={0.5}
         colors={['#7BC67E', '#5a9c5f', '#3f6f47']}
@@ -81,13 +81,17 @@ export default function TitleScreen({ vals, onBegin }: Props) {
         style={[styles.hillFront, { left: -W * 0.1 }]}
       />
 
+      {/* Sun */}
       <RadialOrb size={74} glow="#FFF6DA" body="#FFE09A" cx={0.5} cy={0.5} style={styles.sun} />
 
+      {/* Fireflies */}
       {fireflies.map((f: any, i: number) => <Firefly key={i} {...f} />)}
 
-      <View style={[styles.content, { paddingTop: insets.top + 40 }]}>
+      {/* Title content — vertically centered in the full screen, matching web's justify-content:center */}
+      <View style={styles.content} pointerEvents="none">
         <Text style={styles.tagline}>A Magical Living World</Text>
         <View>
+          {/* Solid-color text-shadow layer (CSS: 0 4px 0 #C9794A) */}
           <Text style={[styles.title, styles.titleShadow]}>Forest{'\n'}Quest</Text>
           <Text style={styles.title}>Forest{'\n'}Quest</Text>
         </View>
@@ -97,7 +101,8 @@ export default function TitleScreen({ vals, onBegin }: Props) {
         </Text>
       </View>
 
-      <View style={[styles.cta, { paddingBottom: insets.bottom + 24 }]}>
+      {/* CTA — pinned to bottom:74px, matching web template */}
+      <View style={[styles.cta, { bottom: Math.max(insets.bottom, 0) + 74 }]}>
         <View>
           <Animated.View
             pointerEvents="none"
@@ -120,10 +125,10 @@ export default function TitleScreen({ vals, onBegin }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  hillBack: { position: 'absolute', bottom: 0, right: -100 },
+  hillBack: { position: 'absolute', bottom: 0 },
   hillFront: { position: 'absolute', bottom: 0 },
   sun: {
-    position: 'absolute', top: '14%', left: '18%',
+    position: 'absolute', top: '14%' as unknown as number, left: '18%' as unknown as number,
     shadowColor: '#FFE09A', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 30, elevation: 10,
   },
   firefly: {
@@ -131,7 +136,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF3C4',
     shadowColor: '#FFF3C4', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.9, shadowRadius: 6, elevation: 4,
   },
-  content: { flex: 1, alignItems: 'center', paddingHorizontal: 36 },
+  // Matches web: position:absolute; inset:0; display:flex; align-items:center; justify-content:center
+  content: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 36,
+  },
   tagline: {
     fontFamily: FONT.baloo.medium, fontSize: 14, letterSpacing: 6, color: '#7a4a23',
     textTransform: 'uppercase', opacity: 0.85, marginBottom: 6,
@@ -141,6 +150,7 @@ const styles = StyleSheet.create({
     textAlign: 'center', marginBottom: 4,
     textShadowColor: 'rgba(90,40,15,0.4)', textShadowOffset: { width: 0, height: 14 }, textShadowRadius: 24,
   },
+  // Solid #C9794A offset shadow — CSS: text-shadow: 0 4px 0 #C9794A
   titleShadow: {
     position: 'absolute', color: '#C9794A',
     transform: [{ translateY: 4 }],
@@ -152,9 +162,10 @@ const styles = StyleSheet.create({
     maxWidth: 280, textAlign: 'center', lineHeight: 21,
     textShadowColor: 'rgba(90,40,15,0.35)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 6,
   },
-  cta: { alignItems: 'center', gap: 14, paddingHorizontal: 40 },
+  // Matches web: position:absolute; bottom:74px; left:0; right:0; align-items:center
+  cta: { position: 'absolute', left: 0, right: 0, alignItems: 'center', gap: 14, paddingHorizontal: 40 },
   pulseRing: {
-    position: 'absolute', inset: 0, borderRadius: 40,
+    position: 'absolute', inset: 0 as unknown as undefined, borderRadius: 40,
     borderWidth: 6, borderColor: 'rgba(245,166,35,0.5)',
   },
   beginBtn: {

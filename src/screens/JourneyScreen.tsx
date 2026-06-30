@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BottomNav from '../components/BottomNav';
 import CurrencyPills from '../components/CurrencyPills';
 import { FONT } from '../theme/fonts';
@@ -9,6 +10,7 @@ import { firstGradientColor, parseGradientColors } from '../utils/parseGradient'
 interface Props { vals: Record<string, any> }
 
 export default function JourneyScreen({ vals }: Props) {
+  const insets = useSafeAreaInsets();
   const quests = vals.quests || [];
   const rankLadder = vals.rankLadder || [];
   const codex = vals.puzzleCodexList || [];
@@ -17,7 +19,7 @@ export default function JourneyScreen({ vals }: Props) {
 
   return (
     <LinearGradient colors={['#efe6d6', '#e7dcc8', '#dfd2bb']} locations={[0, 0.6, 1]} style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 90 + insets.bottom }]}>
         <View style={styles.header}>
           <Text style={styles.title}>Your Journey</Text>
           <CurrencyPills acorns={vals.acorns} glowDust={vals.glowDust} onOpenDaily={vals.openDaily} />
@@ -146,7 +148,7 @@ export default function JourneyScreen({ vals }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { paddingTop: 56, paddingBottom: 100, paddingHorizontal: 16, gap: 16 },
+  content: { paddingTop: 56, paddingHorizontal: 16, gap: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   title: { fontFamily: FONT.baloo.bold, fontSize: 26, color: '#3a2a1c' },
   rankRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: -8 },

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BottomNav from '../components/BottomNav';
 import CurrencyPills from '../components/CurrencyPills';
 import RadialOrb from '../components/RadialOrb';
@@ -9,10 +10,11 @@ import { FONT } from '../theme/fonts';
 interface Props { vals: Record<string, any> }
 
 export default function CreaturesScreen({ vals }: Props) {
+  const insets = useSafeAreaInsets();
   const cards = vals.creatureCards || [];
   return (
     <LinearGradient colors={['#eef3e8', '#e3ebdc', '#efe2d0']} locations={[0, 0.6, 1]} style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 90 + insets.bottom }]}>
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>Your Friends</Text>
@@ -52,7 +54,7 @@ export default function CreaturesScreen({ vals }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { paddingTop: 56, paddingBottom: 100, paddingHorizontal: 16 },
+  content: { paddingTop: 56, paddingHorizontal: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 16 },
   title: { fontFamily: FONT.baloo.bold, fontSize: 26, color: '#3a2a1c' },
   sub: { fontFamily: FONT.nunito.semibold, fontSize: 13, color: '#7a6a58', marginTop: 2 },

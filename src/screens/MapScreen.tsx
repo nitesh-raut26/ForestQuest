@@ -4,13 +4,17 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Polyline } from 'react-native-svg';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CurrencyPills from '../components/CurrencyPills';
 import RadialOrb from '../components/RadialOrb';
 import BottomNav from '../components/BottomNav';
 import { FONT } from '../theme/fonts';
 
 const { width: W, height: H } = Dimensions.get('window');
-const MAP_SIZE = W - 32;
+// Web template's map container: margin:0 16px → width = 402-32 = 370px, height = 520px
+// We scale proportionally: MAP_H / MAP_W = 520 / 370 ≈ 1.405
+const MAP_W = W - 32;
+const MAP_H = Math.round(MAP_W * 520 / 370);
 
 interface MapNode {
   id: string; num: number; name: string; x: number; y: number;
@@ -37,17 +41,19 @@ interface Props {
 }
 
 export default function MapScreen({ vals }: Props) {
+  const insets = useSafeAreaInsets();
   const mapNodes: MapNode[] = vals.mapNodes || [];
   const ri: RegionInfo | null = vals.ri;
   const navItems = vals.navItems || [];
 
+  // Scale x by MAP_W, y by MAP_H — map is rectangular, not square
   const polylinePoints = mapNodes.map(n =>
-    `${n.x / 100 * MAP_SIZE},${n.y / 100 * MAP_SIZE}`
+    `${n.x / 100 * MAP_W},${n.y / 100 * MAP_H}`
   ).join(' ');
 
   return (
     <LinearGradient colors={['#cfe7d6', '#bfe0d8', '#d8c9e6', '#efe2d0']} locations={[0, 0.3, 0.7, 1]} style={styles.container}>
-      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: 90 + insets.bottom }]}>
         {/* Header */}
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
@@ -65,7 +71,7 @@ export default function MapScreen({ vals }: Props) {
             start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }}
             style={StyleSheet.absoluteFill}
           />
-          <Svg width={MAP_SIZE} height={MAP_SIZE} style={StyleSheet.absoluteFill}>
+          <Svg width={MAP_W} height={MAP_H} style={StyleSheet.absoluteFill}>
             <Polyline points={polylinePoints} fill="none" stroke="rgba(255,255,255,0.65)" strokeWidth="2.4" strokeDasharray="6 7" strokeLinecap="round" />
           </Svg>
 
@@ -73,8 +79,9 @@ export default function MapScreen({ vals }: Props) {
             <TouchableOpacity
               key={n.id}
               style={[styles.node, {
-                left: n.x / 100 * MAP_SIZE - 23,
-                top: n.y / 100 * MAP_SIZE - 46,
+                // Center the 88px node container on x, place orb center at y
+                left: n.x / 100 * MAP_W - 44,
+                top: n.y / 100 * MAP_H - 31,
                 opacity: n.nodeOpacity,
               }]}
               onPress={n.onTap}
@@ -178,12 +185,12 @@ export default function MapScreen({ vals }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1 },
-  scrollContent: { paddingTop: 56, paddingBottom: 100, paddingHorizontal: 16 },
+  scrollContent: { paddingTop: 56, paddingHorizontal: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 14 },
   title: { fontFamily: FONT.baloo.bold, fontSize: 26, color: '#3a2a1c' },
   sub: { fontFamily: FONT.nunito.semibold, fontSize: 13, color: '#7a6a58', marginTop: 2 },
   mapBox: {
-    width: MAP_SIZE, height: MAP_SIZE, borderRadius: 26, overflow: 'hidden',
+    width: MAP_W, height: MAP_H, borderRadius: 26, overflow: 'hidden',
     shadowColor: '#3c3228', shadowOffset: { width: 0, height: 14 }, shadowOpacity: 0.3, shadowRadius: 24, elevation: 8,
   },
   node: { position: 'absolute', alignItems: 'center', width: 88 },
