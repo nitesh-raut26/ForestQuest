@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 // MapScreen component
 import {
-  View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions, Modal, Pressable,
-  Animated, Easing,
+  View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, Pressable,
+  Animated, Easing, useWindowDimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Polyline } from 'react-native-svg';
@@ -12,12 +12,6 @@ import BottomNav from '../components/BottomNav';
 import CharacterArt from '../components/CharacterArt';
 import GameIcon from '../components/GameIcon';
 import { FONT } from '../theme/fonts';
-
-const { width: W, height: H } = Dimensions.get('window');
-// Web template's map container: margin:0 16px → width = 402-32 = 370px, height = 520px
-// We scale proportionally: MAP_H / MAP_W = 520 / 370 ≈ 1.405
-const MAP_W = W - 32;
-const MAP_H = Math.round(MAP_W * 520 / 370);
 
 interface MapNode {
   id: string; num: number; name: string; x: number; y: number;
@@ -43,12 +37,12 @@ interface Props {
   vals: Record<string, any>;
 }
 
-function RegionIsland({ node }: { node: MapNode }) {
+function RegionIsland({ node, mapWidth, mapHeight }: { node: MapNode; mapWidth: number; mapHeight: number }) {
   return (
     <TouchableOpacity
       style={[styles.node, {
-        left: node.x / 100 * MAP_W - 47,
-        top: node.y / 100 * MAP_H - 35,
+        left: node.x / 100 * mapWidth - 47,
+        top: node.y / 100 * mapHeight - 35,
         opacity: node.nodeOpacity,
       }]}
       onPress={node.onTap}
@@ -89,17 +83,21 @@ function MapExplorer({
   currentId,
   shouldJump,
   unlockedName,
+  mapWidth,
+  mapHeight,
 }: {
   nodes: MapNode[];
   currentId?: string;
   shouldJump: boolean;
   unlockedName?: string;
+  mapWidth: number;
+  mapHeight: number;
 }) {
   const current = nodes.find((n) => n.id === currentId) || nodes.find((n) => !n.locked) || nodes[0];
   const next = current && nodes.find((n) => n.num === current.num + 1 && !n.locked);
   const destination = shouldJump && next ? next : current;
-  const startX = current ? current.x / 100 * MAP_W : 0;
-  const startY = current ? current.y / 100 * MAP_H : 0;
+  const startX = current ? current.x / 100 * mapWidth : 0;
+  const startY = current ? current.y / 100 * mapHeight : 0;
   const position = useRef(new Animated.ValueXY({ x: startX, y: startY })).current;
   const hop = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(1)).current;
@@ -116,7 +114,7 @@ function MapExplorer({
 
     Animated.parallel([
       Animated.timing(position, {
-        toValue: { x: next.x / 100 * MAP_W, y: next.y / 100 * MAP_H },
+        toValue: { x: next.x / 100 * mapWidth, y: next.y / 100 * mapHeight },
         duration: 1250,
         easing: Easing.inOut(Easing.cubic),
         useNativeDriver: true,
@@ -132,7 +130,7 @@ function MapExplorer({
     ]).start(({ finished }) => {
       if (finished) setShowArrival(true);
     });
-  }, [current?.id, destination?.id, shouldJump]);
+  }, [current?.id, destination?.id, shouldJump, mapWidth, mapHeight]);
 
   if (!current) return null;
 
@@ -168,19 +166,23 @@ function MapExplorer({
 
 export default function MapScreen({ vals }: Props) {
   const insets = useSafeAreaInsets();
+  const { width, height } = useWindowDimensions();
   const mapNodes: MapNode[] = vals.mapNodes || [];
   const ri: RegionInfo | null = vals.ri;
   const navItems = vals.navItems || [];
   const arrivalJump = useRef(!!vals.mapArrivalFromUnlock).current;
+  const wideLayout = width >= 700 || width > height;
+  const mapWidth = Math.min(Math.max(320, width - 32), 720);
+  const mapHeight = wideLayout ? Math.min(430, Math.round(mapWidth * 0.65)) : Math.round(mapWidth * 520 / 370);
 
-  // Scale x by MAP_W, y by MAP_H — map is rectangular, not square
+  // Scale node coordinates to the current orientation.
   const polylinePoints = mapNodes.map(n =>
-    `${n.x / 100 * MAP_W},${n.y / 100 * MAP_H}`
+    `${n.x / 100 * mapWidth},${n.y / 100 * mapHeight}`
   ).join(' ');
 
   return (
     <LinearGradient colors={['#cfe7d6', '#bfe0d8', '#d8c9e6', '#efe2d0']} locations={[0, 0.3, 0.7, 1]} style={styles.container}>
-      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: 90 + insets.bottom }]}>
+      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 18, paddingBottom: 90 + insets.bottom }]}>
         {/* Header */}
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
@@ -191,7 +193,7 @@ export default function MapScreen({ vals }: Props) {
         </View>
 
         {/* Map container */}
-          <View style={styles.mapBox}>
+          <View style={[styles.mapBox, { width: mapWidth, height: mapHeight }]}>
           <LinearGradient
             colors={['#8bd1da', '#7ebda2', '#7898bd', '#715d8e']}
             locations={[0, 0.36, 0.7, 1]}
@@ -203,17 +205,19 @@ export default function MapScreen({ vals }: Props) {
           <View style={[styles.mapRidge, { width: 190, height: 92, left: -48, bottom: 34, backgroundColor: '#557f6a' }]} />
           <View style={[styles.mapRidge, { width: 220, height: 118, right: -62, bottom: 168, backgroundColor: '#526c79' }]} />
           <View style={[styles.mapRidge, { width: 165, height: 82, left: 92, top: -28, backgroundColor: '#5c6482' }]} />
-          <Svg width={MAP_W} height={MAP_H} style={StyleSheet.absoluteFill}>
+          <Svg width={mapWidth} height={mapHeight} style={StyleSheet.absoluteFill}>
             <Polyline points={polylinePoints} fill="none" stroke="rgba(28,61,72,0.35)" strokeWidth="13" strokeLinecap="round" strokeLinejoin="round" />
             <Polyline points={polylinePoints} fill="none" stroke="rgba(231,250,255,0.82)" strokeWidth="3" strokeDasharray="7 8" strokeLinecap="round" strokeLinejoin="round" />
           </Svg>
 
-          {mapNodes.map((n) => <RegionIsland key={n.id} node={n} />)}
+          {mapNodes.map((n) => <RegionIsland key={n.id} node={n} mapWidth={mapWidth} mapHeight={mapHeight} />)}
           <MapExplorer
             nodes={mapNodes}
             currentId={vals.cr?.id}
             shouldJump={arrivalJump}
             unlockedName={vals.unlockTargetName}
+            mapWidth={mapWidth}
+            mapHeight={mapHeight}
           />
         </View>
 
@@ -238,7 +242,7 @@ export default function MapScreen({ vals }: Props) {
       <Modal visible={!!vals.riOpen} transparent animationType="slide" onRequestClose={vals.closeRi}>
         <Pressable style={styles.overlay} onPress={vals.closeRi} />
         {ri && (
-          <View style={styles.sheet}>
+          <View style={[styles.sheet, { maxHeight: height * 0.86 }]}>
             <ScrollView contentContainerStyle={styles.sheetContent} showsVerticalScrollIndicator={false}>
               <View style={styles.sheetHandle} />
               <View style={styles.sheetHeader}>
@@ -306,12 +310,12 @@ export default function MapScreen({ vals }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1 },
-  scrollContent: { paddingTop: 56, paddingHorizontal: 16 },
+  scrollContent: { width: '100%', maxWidth: 760, alignSelf: 'center', paddingHorizontal: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 14 },
   title: { fontFamily: FONT.baloo.bold, fontSize: 26, color: '#3a2a1c' },
   sub: { fontFamily: FONT.nunito.semibold, fontSize: 13, color: '#7a6a58', marginTop: 2 },
   mapBox: {
-    width: MAP_W, height: MAP_H, borderRadius: 26, overflow: 'hidden',
+    alignSelf: 'center', borderRadius: 26, overflow: 'hidden',
     borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)',
     shadowColor: '#3c3228', shadowOffset: { width: 0, height: 14 }, shadowOpacity: 0.3, shadowRadius: 24, elevation: 8,
   },
@@ -397,7 +401,7 @@ const styles = StyleSheet.create({
   regionsSub: { fontFamily: FONT.nunito.semibold, fontSize: 11, color: '#7a6a58' },
   overlay: { flex: 1, backgroundColor: 'rgba(20,15,10,0.5)' },
   sheet: {
-    position: 'absolute', left: 0, right: 0, bottom: 0, maxHeight: H * 0.8,
+    position: 'absolute', left: 0, right: 0, bottom: 0,
     backgroundColor: '#FFF8EF', borderTopLeftRadius: 28, borderTopRightRadius: 28,
   },
   sheetContent: { paddingHorizontal: 22, paddingTop: 8, paddingBottom: 28 },

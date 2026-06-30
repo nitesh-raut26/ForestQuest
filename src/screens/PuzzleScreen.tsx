@@ -1,7 +1,8 @@
 import React from 'react';
 // PuzzleScreen component
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import RadialBackdrop from '../components/RadialBackdrop';
 import CharacterArt from '../components/CharacterArt';
 import GameIcon from '../components/GameIcon';
@@ -10,17 +11,15 @@ import {
   ColourPuzzle, MemoryPuzzle, FlowPuzzle, ShapePuzzle, SequencePuzzle,
   WeightPuzzle, LightPuzzle, ShadowPuzzle, RunePuzzle, RecallPuzzle,
   NumberPuzzle, SlidePuzzle, HanoiPuzzle, EqnPuzzle, DotsPuzzle,
-  WordPuzzle, TracePuzzle, OddPuzzle, CountPuzzle, MazePuzzle,
+  WordPuzzle, TracePuzzle, OddPuzzle, CountPuzzle, MazePuzzle, FireflyPuzzle,
 } from '../puzzles/AllPuzzles';
-
-const { width: W, height: H } = Dimensions.get('window');
 
 interface Props { vals: Record<string, any> }
 
 function puzzleKind(vals: Record<string, any>) {
   const kinds = [
     'Colour', 'Memory', 'Flow', 'Shape', 'Sequence', 'Weight', 'Light', 'Shadow', 'Rune',
-    'Recall', 'Number', 'Slide', 'Hanoi', 'Eqn', 'Dots', 'Word', 'Trace', 'Odd', 'Count', 'Maze',
+    'Recall', 'Number', 'Slide', 'Hanoi', 'Eqn', 'Dots', 'Word', 'Trace', 'Odd', 'Count', 'Maze', 'Firefly',
   ];
   const found = kinds.find((kind) => vals[`is${kind}`]);
   return found ? (found === 'Recall' ? 'sound' : found.toLowerCase()) : 'shape';
@@ -49,23 +48,29 @@ function PuzzleBody({ vals }: Props) {
   if (vals.isOdd) return <OddPuzzle vals={vals} />;
   if (vals.isCount) return <CountPuzzle vals={vals} />;
   if (vals.isMaze) return <MazePuzzle vals={vals} />;
+  if (vals.isFirefly) return <FireflyPuzzle vals={vals} />;
   return <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontSize: 18 }}>Loading puzzle…</Text></View>;
 }
 
 export default function PuzzleScreen({ vals }: Props) {
+  const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const attempts: any[] = vals.attemptDots || [];
   const isLadder = vals.isLadderPuzzle;
   const kind = puzzleKind(vals);
+  const compact = height < 560 || width > height;
+  const headerTop = insets.top + (compact ? 6 : 12);
+  const bodyTop = headerTop + (vals.hintOpen ? 132 : (compact ? 68 : 124));
 
   return (
     <View style={styles.container}>
       <RadialBackdrop
-        width={W} height={H} cx={0.5} cy={0.3}
+        width={width} height={height} cx={0.5} cy={0.3}
         colors={['rgba(74,124,89,0.35)', 'rgba(20,15,10,0.78)']}
       />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { top: headerTop }]}>
         <TouchableOpacity onPress={vals.exitPuzzle} style={styles.backBtn} activeOpacity={0.85}>
           <Text style={styles.backText}>✕</Text>
         </TouchableOpacity>
@@ -101,7 +106,7 @@ export default function PuzzleScreen({ vals }: Props) {
 
       {/* Creature hint bubble */}
       {vals.hintOpen && (
-        <View style={styles.hintRow}>
+        <View style={[styles.hintRow, { top: headerTop + 58 }]}>
           <View style={[styles.hintAvatar, { backgroundColor: vals.pgGlow || '#FFC58C' }]}>
             <CharacterArt name={vals.pgName} size={62} />
           </View>
@@ -113,9 +118,13 @@ export default function PuzzleScreen({ vals }: Props) {
       )}
 
       {/* Puzzle body */}
-      <View style={styles.body}>
+      <ScrollView
+        style={[styles.body, { paddingTop: bodyTop }]}
+        contentContainerStyle={[styles.bodyContent, { minHeight: Math.max(360, height - bodyTop + 30) }]}
+        showsVerticalScrollIndicator={false}
+      >
         <PuzzleBody vals={vals} />
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -123,7 +132,7 @@ export default function PuzzleScreen({ vals }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#140a08' },
   header: {
-    position: 'absolute', top: 54, left: 0, right: 0, zIndex: 2,
+    position: 'absolute', left: 0, right: 0, zIndex: 2,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18,
   },
   backBtn: {
@@ -145,7 +154,7 @@ const styles = StyleSheet.create({
   attemptDot: { width: 8, height: 8, borderRadius: 4 },
   hintBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
   hintBtnText: { fontFamily: FONT.nunito.extrabold, fontSize: 12, color: '#3a2a1c' },
-  hintRow: { position: 'absolute', top: 108, left: 18, right: 18, zIndex: 2, flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
+  hintRow: { position: 'absolute', left: 18, right: 18, zIndex: 3, flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
   hintAvatar: {
     width: 48, height: 48, borderRadius: 16, overflow: 'hidden', alignItems: 'center', justifyContent: 'center',
     shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 14, elevation: 6,
@@ -156,5 +165,6 @@ const styles = StyleSheet.create({
   },
   hintName: { fontFamily: FONT.nunito.extrabold, fontSize: 11 },
   hintText: { fontFamily: FONT.nunito.semibold, fontSize: 13, color: '#3a2a1c', lineHeight: 17 },
-  body: { flex: 1, paddingTop: 178 },
+  body: { flex: 1 },
+  bodyContent: { flexGrow: 1, alignItems: 'stretch', paddingBottom: 24 },
 });

@@ -1,13 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 // TitleScreen component
-import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import HillShape from '../components/HillShape';
 import RadialOrb from '../components/RadialOrb';
 import { FONT } from '../theme/fonts';
-
-const { width: W, height: H } = Dimensions.get('window');
 
 const FALLBACK_FIREFLIES = [
   { x: 22, y: 60, dur: 5, delay: 0 }, { x: 70, y: 48, dur: 6.4, delay: 0.6 },
@@ -50,6 +48,8 @@ interface Props { vals?: Record<string, any>; onBegin: () => void }
 
 export default function TitleScreen({ vals, onBegin }: Props) {
   const insets = useSafeAreaInsets();
+  const { width, height } = useWindowDimensions();
+  const compact = height < 560 || width > height;
   const ring = useRef(new Animated.Value(0)).current;
   const fireflies = vals?.fireflies || FALLBACK_FIREFLIES;
 
@@ -72,14 +72,14 @@ export default function TitleScreen({ vals, onBegin }: Props) {
     >
       {/* Hills — match web template's radial-gradient domes */}
       <HillShape
-        width={W + 200} height={H * 0.46} domeRatio={0.22} cx={0.5}
+        width={width + 200} height={height * 0.46} domeRatio={0.22} cx={0.5}
         colors={['#7BC67E', '#5a9c5f', '#3f6f47']}
         style={[styles.hillBack, { left: -100 }]}
       />
       <HillShape
-        width={W * 1.2} height={H * 0.3} domeRatio={0.3} cx={0.4}
+        width={width * 1.2} height={height * 0.3} domeRatio={0.3} cx={0.4}
         colors={['#6fb673', '#4d8a53']} opacity={0.9}
-        style={[styles.hillFront, { left: -W * 0.1 }]}
+        style={[styles.hillFront, { left: -width * 0.1 }]}
       />
 
       {/* Sun */}
@@ -89,21 +89,21 @@ export default function TitleScreen({ vals, onBegin }: Props) {
       {fireflies.map((f: any, i: number) => <Firefly key={i} {...f} />)}
 
       {/* Title content — vertically centered in the full screen, matching web's justify-content:center */}
-      <View style={styles.content} pointerEvents="none">
+      <View style={[styles.content, compact && styles.contentCompact]} pointerEvents="none">
         <Text style={styles.tagline}>A Magical Living World</Text>
         <View>
           {/* Solid-color text-shadow layer (CSS: 0 4px 0 #C9794A) */}
-          <Text style={[styles.title, styles.titleShadow]}>Forest{'\n'}Quest</Text>
-          <Text style={styles.title}>Forest{'\n'}Quest</Text>
+          <Text style={[styles.title, compact && styles.titleCompact, styles.titleShadow]}>Forest{compact ? ' ' : '\n'}Quest</Text>
+          <Text style={[styles.title, compact && styles.titleCompact]}>Forest{compact ? ' ' : '\n'}Quest</Text>
         </View>
         <View style={styles.divider} />
-        <Text style={styles.subtitle}>
+        <Text style={[styles.subtitle, compact && styles.subtitleCompact]}>
           Explore eleven living biomes and solve 110 puzzles with six creature friends who grow alongside you.
         </Text>
       </View>
 
       {/* CTA — pinned to bottom:74px, matching web template */}
-      <View style={[styles.cta, { bottom: Math.max(insets.bottom, 0) + 74 }]}>
+      <View style={[styles.cta, { bottom: Math.max(insets.bottom, 0) + (compact ? 18 : 74) }]}>
         <View>
           <Animated.View
             pointerEvents="none"
@@ -113,7 +113,7 @@ export default function TitleScreen({ vals, onBegin }: Props) {
             }]}
           />
           <TouchableOpacity onPress={onBegin} activeOpacity={0.88}>
-            <LinearGradient colors={['#5EA862', '#3f7d47']} style={styles.beginBtn}>
+            <LinearGradient colors={['#5EA862', '#3f7d47']} style={[styles.beginBtn, { width: Math.min(width - 80, 280), paddingVertical: compact ? 12 : 18 }]}>
               <Text style={styles.beginText}>Begin Adventure</Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -142,6 +142,7 @@ const styles = StyleSheet.create({
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 36,
   },
+  contentCompact: { justifyContent: 'flex-start', paddingTop: 38 },
   tagline: {
     fontFamily: FONT.baloo.medium, fontSize: 14, letterSpacing: 6, color: '#7a4a23',
     textTransform: 'uppercase', opacity: 0.85, marginBottom: 6,
@@ -151,6 +152,7 @@ const styles = StyleSheet.create({
     textAlign: 'center', marginBottom: 4,
     textShadowColor: 'rgba(90,40,15,0.4)', textShadowOffset: { width: 0, height: 14 }, textShadowRadius: 24,
   },
+  titleCompact: { fontSize: 43, lineHeight: 46 },
   // Solid #C9794A offset shadow — CSS: text-shadow: 0 4px 0 #C9794A
   titleShadow: {
     position: 'absolute', color: '#C9794A',
@@ -163,6 +165,7 @@ const styles = StyleSheet.create({
     maxWidth: 280, textAlign: 'center', lineHeight: 21,
     textShadowColor: 'rgba(90,40,15,0.35)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 6,
   },
+  subtitleCompact: { marginTop: 9, maxWidth: 460, fontSize: 12.5, lineHeight: 17 },
   // Matches web: position:absolute; bottom:74px; left:0; right:0; align-items:center
   cta: { position: 'absolute', left: 0, right: 0, alignItems: 'center', gap: 14, paddingHorizontal: 40 },
   pulseRing: {
@@ -170,7 +173,7 @@ const styles = StyleSheet.create({
     borderWidth: 6, borderColor: 'rgba(245,166,35,0.5)',
   },
   beginBtn: {
-    width: W - 80, maxWidth: 280,
+    maxWidth: 280,
     borderRadius: 40, paddingVertical: 18, alignItems: 'center',
     shadowColor: '#2f5e36', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 1, shadowRadius: 0, elevation: 8,
   },

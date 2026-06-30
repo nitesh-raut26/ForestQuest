@@ -1,10 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import CharacterArt from '../components/CharacterArt';
 import { FONT } from '../theme/fonts';
-
-const { width: W } = Dimensions.get('window');
 
 interface Props { vals: Record<string, any> }
 
@@ -116,7 +114,7 @@ export default function DetailScreen({ vals }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFF8EF' },
-  scrollContent: { paddingBottom: 40 },
+  scrollContent: { width: '100%', maxWidth: 760, alignSelf: 'center', paddingBottom: 40 },
   hero: { height: 230, alignItems: 'center', justifyContent: 'center' },
   heroHalo: {
     position: 'absolute', width: 190, height: 190, borderRadius: 95, backgroundColor: 'rgba(255,255,255,0.22)',
