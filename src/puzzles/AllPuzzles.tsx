@@ -325,17 +325,36 @@ export function NumberPuzzle({ vals }: Props) {
 export function SlidePuzzle({ vals }: Props) {
   const tiles = vals.slideTiles || [];
   const N = Math.round(Math.sqrt(tiles.length)) || 3;
-  const tileSize = 74;
+  // Web template: grid width=230px, padding=8px each side, gap=8px
+  // tile = (230 - 2*8 - (N-1)*8) / N = (230-16-16)/3 = 66px
+  const GRID_OUTER = 230;
+  const PAD = 8;
+  const GAP = 8;
+  const tileSize = (GRID_OUTER - 2 * PAD - (N - 1) * GAP) / N; // 66px for N=3
   return (
     <View style={s.wrapper}>
       <Text style={s.intro}>Slide the tiles to order them 1–{tiles.length - 1}. Tap a tile next to the gap.</Text>
-      <View style={[s.slideGrid, { width: N * tileSize + (N - 1) * 8 }]}>
+      <View style={[s.slideGrid, { width: GRID_OUTER }]}>
         {tiles.map((t: any) => {
           const stops = parseGradientColors(t.bg);
+          const tileDim = { width: tileSize, height: tileSize };
+          // Blank slot — non-interactive view with a faint inset border
+          if (t.blank) {
+            return <View key={t.i} style={[s.slideTile, s.slideTileBlank, tileDim]} />;
+          }
+          // Numbered tile — LinearGradient IS the container so text renders
+          // inside it (avoids absolute-z-order issue where gradient covered text)
           return (
-            <TouchableOpacity key={t.i} disabled={t.blank} style={[s.slideTile, { width: tileSize, height: tileSize, overflow: 'hidden' }]} onPress={t.onTap} activeOpacity={0.85}>
-              {stops.length >= 2 && <LinearGrad colors={stops} style={StyleSheet.absoluteFillObject} />}
-              {!t.blank && <Text style={s.slideTileText}>{t.label}</Text>}
+            <TouchableOpacity key={t.i} onPress={t.onTap} activeOpacity={0.85}>
+              {stops.length >= 2 ? (
+                <LinearGrad colors={stops} style={[s.slideTile, tileDim]}>
+                  <Text style={s.slideTileText}>{t.label}</Text>
+                </LinearGrad>
+              ) : (
+                <View style={[s.slideTile, tileDim]}>
+                  <Text style={s.slideTileText}>{t.label}</Text>
+                </View>
+              )}
             </TouchableOpacity>
           );
         })}
@@ -685,10 +704,11 @@ const s = StyleSheet.create({
   optGrid2: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, width: '100%', justifyContent: 'center' },
   lightOptBtn: { width: '44%', paddingVertical: 16, borderRadius: 16, backgroundColor: 'rgba(255,248,239,0.95)', alignItems: 'center' },
   lightOptText: { fontFamily: FONT.baloo.extrabold, fontSize: 20 },
-  // slide
+  // slide — web: grid width:230px, padding:8px, gap:8px → tiles=(230-16-16)/3=66px
   slideGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 8, backgroundColor: 'rgba(0,0,0,0.18)', borderRadius: 16 },
   slideTile: { borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  slideTileText: { fontFamily: FONT.baloo.extrabold, fontSize: 24, color: '#fff' },
+  slideTileBlank: { borderWidth: 2, borderColor: 'rgba(255,255,255,0.1)' },
+  slideTileText: { fontFamily: FONT.baloo.extrabold, fontSize: 22, color: '#fff' },
   // hanoi
   hanoiPeg: { flex: 1, height: 160, borderRadius: 14, alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 8, gap: 4, marginHorizontal: 4 },
   hanoiPole: { position: 'absolute', top: 8, bottom: 30, width: 6, backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 3 },
