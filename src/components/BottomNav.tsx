@@ -99,3 +99,4 @@ const styles = StyleSheet.create({
   },
   label: { fontFamily: FONT.nunito.extrabold, fontSize: 10 },
 });
+// Minor update
