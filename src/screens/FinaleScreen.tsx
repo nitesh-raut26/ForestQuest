@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import RadialOrb from '../components/RadialOrb';
+import CharacterArt from '../components/CharacterArt';
 import { FONT } from '../theme/fonts';
 
 const { width: W } = Dimensions.get('window');
@@ -45,11 +45,15 @@ export default function FinaleScreen({ vals }: Props) {
       <View style={[styles.guidesRow, { opacity: guidesOp }]} pointerEvents="none">
         {guides.map((g: any) => (
           <View key={g.id} style={[styles.guideDot, { left: `${g.x}%` }]}>
-            <RadialOrb size={42} glow={g.glow} body={g.body} style={styles.guideGlow} />
+            <View style={[styles.guideGlow, { backgroundColor: g.glow }]}>
+              <CharacterArt id={g.id} size={62} />
+            </View>
           </View>
         ))}
       </View>
-      <View style={[styles.avatarFigure, { opacity: guidesOp }]} pointerEvents="none" />
+      <View style={[styles.avatarFigure, { opacity: guidesOp }]} pointerEvents="none">
+        <CharacterArt id="ari" size={88} />
+      </View>
 
       <View style={styles.captionTop}>
         {vals.finaleShowTitle && (
@@ -86,12 +90,14 @@ const styles = StyleSheet.create({
   moon: { position: 'absolute', top: '9%', left: '50%', marginLeft: -60, width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(255,246,218,0.5)' },
   horizon: { position: 'absolute', bottom: 0, left: 0, right: 0, height: '34%', backgroundColor: '#154873', borderTopLeftRadius: 999, borderTopRightRadius: 999 },
   guidesRow: { position: 'absolute', bottom: '18%', left: 0, right: 0, height: 70 },
-  guideDot: { position: 'absolute', bottom: 0, marginLeft: -21 },
-  guideGlow: { shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 14, elevation: 8 },
+  guideDot: { position: 'absolute', bottom: 0, marginLeft: -26 },
+  guideGlow: {
+    width: 54, height: 54, borderRadius: 18, overflow: 'hidden', alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 14, elevation: 8,
+  },
   avatarFigure: {
-    position: 'absolute', bottom: '17.5%', left: '50%', marginLeft: -17, width: 34, height: 44,
-    borderRadius: 18, borderBottomLeftRadius: 14, borderBottomRightRadius: 14, backgroundColor: '#fff0c8',
-    shadowColor: '#fff0c8', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.7, shadowRadius: 16, elevation: 8,
+    position: 'absolute', bottom: '14.5%', left: '50%', marginLeft: -44, width: 88, height: 88,
+    alignItems: 'center', justifyContent: 'center',
   },
   captionTop: { position: 'absolute', top: 0, left: 0, right: 0, height: '46%', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 38 },
   kicker: { fontFamily: FONT.baloo.extrabold, fontSize: 13, letterSpacing: 5, color: '#FFD86B', textTransform: 'uppercase', marginBottom: 10 },

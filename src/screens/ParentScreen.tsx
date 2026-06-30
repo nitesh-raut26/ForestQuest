@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import RadialOrb from '../components/RadialOrb';
+import CharacterArt from '../components/CharacterArt';
 import { FONT } from '../theme/fonts';
 
 interface Props { vals: Record<string, any> }
@@ -54,7 +54,9 @@ export default function ParentScreen({ vals }: Props) {
         </View>
 
         <View style={styles.favCard}>
-          <RadialOrb size={52} glow={vals.favGlow || '#FFC58C'} body={vals.favBody || '#E8822F'} />
+          <View style={[styles.favAvatar, { backgroundColor: vals.favGlow || '#FFC58C' }]}>
+            <CharacterArt name={vals.favName} size={68} />
+          </View>
           <View>
             <Text style={styles.favLabel}>Closest Companion</Text>
             <Text style={styles.favName}>{vals.favName} · Bond {vals.favBond}</Text>
@@ -96,6 +98,7 @@ const styles = StyleSheet.create({
   skillTrack: { height: 9, borderRadius: 6, backgroundColor: '#eef1f5', overflow: 'hidden' },
   skillFill: { height: '100%', borderRadius: 6 },
   favCard: { flexDirection: 'row', gap: 13, alignItems: 'center', backgroundColor: '#fff', borderRadius: 18, padding: 16, shadowColor: 'rgba(60,70,90,0.4)', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 1, shadowRadius: 16, elevation: 4 },
+  favAvatar: { width: 56, height: 56, borderRadius: 18, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   favLabel: { fontFamily: FONT.nunito.bold, fontSize: 11, color: '#9aa6b4', textTransform: 'uppercase', letterSpacing: 0.5 },
   favName: { fontFamily: FONT.baloo.bold, fontSize: 17, color: '#2b3a4a' },
   promiseCard: { backgroundColor: '#eaf2ec', borderRadius: 18, padding: 16 },

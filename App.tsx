@@ -64,6 +64,12 @@ export default function App() {
   const logic = logicRef.current;
   const screen = logic.state.screen;
   const prevScreen = useRef(screen);
+  const lastRenderedScreen = useRef(screen);
+  const rewardState = logic.state.rw as Record<string, any> | null;
+  const mapArrivalFromUnlock =
+    screen === 'map' &&
+    lastRenderedScreen.current === 'reward' &&
+    !!rewardState?.hasUnlock;
 
   // Load saved game async on mount
   useEffect(() => {
@@ -99,6 +105,10 @@ export default function App() {
     }
   }, [screen]);
 
+  useEffect(() => {
+    lastRenderedScreen.current = screen;
+  }, [screen]);
+
   // All hooks above must run unconditionally every render — only bail after them.
   if (!fontsLoaded) return null;
 
@@ -110,6 +120,8 @@ export default function App() {
     goMap: () => logic.go('map'),
     goCreatures: () => logic.go('creatures'),
     goJourney: () => logic.go('journey'),
+    mapArrivalFromUnlock,
+    unlockTargetName: rewardState?.unlockedName || '',
     // renderVals() doesn't bind this one (the template calls it directly) — see ShadowPuzzle.
     shadowRotate: () => (logic as any).shadowRotate?.(),
   } as Record<string, any>;

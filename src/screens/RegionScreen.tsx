@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions, Easing } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import RadialOrb from '../components/RadialOrb';
+import CharacterArt from '../components/CharacterArt';
+import GameIcon from '../components/GameIcon';
 import { FONT } from '../theme/fonts';
 
 const { width: W } = Dimensions.get('window');
@@ -41,6 +42,23 @@ export default function RegionScreen({ vals }: Props) {
   const avatarBob = useBob(1100);
   const guideBob = useBob(1300, 200);
   const collectibleBob = useBob(1600);
+  const travel = useRef(new Animated.Value(ep)).current;
+  const travelHop = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(travel, {
+        toValue: ep,
+        duration: 520,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.sequence([
+        Animated.timing(travelHop, { toValue: -24, duration: 240, useNativeDriver: true }),
+        Animated.timing(travelHop, { toValue: 0, duration: 280, easing: Easing.bounce, useNativeDriver: true }),
+      ]),
+    ]).start();
+  }, [ep]);
 
   return (
     <View style={styles.container}>
@@ -52,43 +70,60 @@ export default function RegionScreen({ vals }: Props) {
         <View style={[styles.farHill, { backgroundColor: primary, left: '46%', width: 200, height: 150 }]} />
         <View style={[styles.farHill, { backgroundColor: primary, left: '84%', width: 170, height: 130 }]} />
       </View>
+      <View style={styles.horizonMist} />
       {/* Parallax mid trees */}
       <View style={[styles.midLayer, { transform: [{ translateX: -midX }] }]}>
-        <View style={[styles.midTree, { backgroundColor: ground, left: '14%', width: 64, height: 140 }]} />
-        <View style={[styles.midTree, { backgroundColor: ground, left: '40%', width: 80, height: 170 }]} />
-        <View style={[styles.midTree, { backgroundColor: ground, left: '70%', width: 70, height: 150 }]} />
-        <View style={[styles.midTree, { backgroundColor: ground, left: '96%', width: 80, height: 165 }]} />
+        <View style={[styles.treeTrunk, { left: '19%', height: 104 }]} />
+        <View style={[styles.midTree, { backgroundColor: ground, left: '7%', width: 76, height: 112 }]} />
+        <View style={[styles.treeTrunk, { left: '52%', height: 124 }]} />
+        <View style={[styles.midTree, { backgroundColor: ground, left: '39%', width: 94, height: 142 }]} />
+        <View style={[styles.treeTrunk, { left: '87%', height: 110 }]} />
+        <View style={[styles.midTree, { backgroundColor: ground, left: '74%', width: 86, height: 130 }]} />
       </View>
 
       {/* Ground band */}
       <LinearGradient colors={[ground, groundDark]} style={styles.groundBand} />
+      <View style={styles.trailOuter}>
+        <LinearGradient colors={['rgba(255,232,181,0.8)', 'rgba(124,91,61,0.72)']} style={styles.trailInner} />
+      </View>
       <View style={[styles.groundLine, { transform: [{ translateX: -nearX }] }]} />
+      <View style={[styles.foregroundRock, { left: -24, bottom: '10%', backgroundColor: groundDark }]} />
+      <View style={[styles.foregroundRock, { right: -42, bottom: '4%', backgroundColor: groundDark, width: 155, height: 78 }]} />
 
       {/* Collectible */}
       {vals.showCollectible && (
         <Animated.View style={[styles.collectible, { left: `${vals.collectibleLeft}%`, transform: [{ translateY: collectibleBob }] }]}>
-          <RadialOrb size={30} glow="#FFF3C4" body={accent} />
+          <View style={[styles.collectibleGem, { backgroundColor: accent }]}>
+            <GameIcon kind="stardust" size={25} color="#fff" secondary="#FFF6C4" />
+          </View>
         </Animated.View>
       )}
 
       {/* Puzzle marker */}
       <View style={[styles.marker, { left: `${vals.markerLeft}%`, transform: [{ translateX: '-50%' as unknown as number }] }]}>
         <Text style={styles.markerLabel} numberOfLines={1}>{vals.markerPuzzleName}</Text>
-        <RadialOrb size={56} glow="#fff" body={secondary} style={styles.markerOrb}>
-          <View style={styles.markerDiamond} />
-        </RadialOrb>
+        <View style={[styles.markerBase, { backgroundColor: groundDark }]} />
+        <LinearGradient colors={[accent, secondary]} style={styles.markerOrb}>
+          <GameIcon kind={cr.puzzleType || 'shape'} size={35} color="#fff" secondary={groundDark} />
+        </LinearGradient>
       </View>
 
       {/* Avatar + guide */}
-      <View style={styles.figures}>
-        <Animated.View style={[styles.avatarBody, { transform: [{ translateY: avatarBob }] }]}>
-          <View style={[styles.eye, { left: 9 }]} />
-          <View style={[styles.eye, { left: 20 }]} />
+      <Animated.View style={[styles.figures, {
+        transform: [
+          { translateX: travel.interpolate({ inputRange: [0, 100], outputRange: [0, W * 0.38] }) },
+          { translateY: travelHop },
+        ],
+      }]}>
+        <Animated.View style={{ transform: [{ translateY: avatarBob }] }}>
+          <View style={styles.characterShadow} />
+          <CharacterArt id="ari" size={92} />
         </Animated.View>
         <Animated.View style={{ transform: [{ translateY: guideBob }] }}>
-          <RadialOrb size={40} glow={gc.glow || '#FFC58C'} body={gc.body || '#E8822F'} style={styles.guideShadow} />
+          <View style={[styles.characterGlow, { backgroundColor: gc.glow || '#FFC58C' }]} />
+          <CharacterArt name={gc.name} size={72} style={styles.guideArt} />
         </Animated.View>
-      </View>
+      </Animated.View>
 
       {/* Speech bubble */}
       <View style={styles.bubble}>
@@ -129,26 +164,48 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   farLayer: { position: 'absolute', left: 0, right: 0, bottom: '30%', height: '36%', opacity: 0.5 },
   farHill: { position: 'absolute', bottom: 0, borderTopLeftRadius: 999, borderTopRightRadius: 999 },
+  horizonMist: { position: 'absolute', left: 0, right: 0, bottom: '38%', height: 76, backgroundColor: 'rgba(255,255,255,0.13)', borderRadius: 999 },
   midLayer: { position: 'absolute', left: 0, right: 0, bottom: '24%', height: '30%', opacity: 0.72 },
-  midTree: { position: 'absolute', bottom: 0, borderTopLeftRadius: 999, borderTopRightRadius: 999 },
+  treeTrunk: { position: 'absolute', bottom: 0, width: 18, borderRadius: 9, backgroundColor: '#6a4c36' },
+  midTree: { position: 'absolute', bottom: 56, borderRadius: 999, opacity: 0.95 },
   groundBand: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '26%' },
+  trailOuter: {
+    position: 'absolute', left: '10%', right: '-18%', bottom: '-2%', height: '30%',
+    borderTopLeftRadius: 999, borderTopRightRadius: 999, overflow: 'hidden',
+    transform: [{ perspective: 700 }, { rotateX: '55deg' }, { rotateZ: '-4deg' }],
+  },
+  trailInner: { flex: 1, opacity: 0.72 },
   groundLine: { position: 'absolute', left: 0, right: 0, bottom: '24%', height: 5, backgroundColor: 'rgba(255,255,255,0.25)' },
+  foregroundRock: { position: 'absolute', width: 120, height: 62, borderRadius: 999, opacity: 0.84 },
   collectible: { position: 'absolute', bottom: '30%' },
+  collectibleGem: {
+    width: 34, height: 34, borderRadius: 11, alignItems: 'center', justifyContent: 'center',
+    transform: [{ rotate: '8deg' }], borderWidth: 2, borderColor: 'rgba(255,255,255,0.8)',
+    shadowColor: '#FFF3C4', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 14, elevation: 8,
+  },
   marker: { position: 'absolute', bottom: '27%', alignItems: 'center', gap: 6 },
   markerLabel: {
     fontFamily: FONT.nunito.extrabold, fontSize: 10, color: '#fff',
     backgroundColor: 'rgba(40,30,20,0.4)', paddingHorizontal: 9, paddingVertical: 3, borderRadius: 10,
   },
-  markerOrb: { shadowColor: 'rgba(245,166,35,0.6)', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 16, elevation: 8 },
-  markerDiamond: { width: 22, height: 22, borderRadius: 6, backgroundColor: '#fff', transform: [{ rotate: '45deg' }] },
-  figures: { position: 'absolute', left: '14%', bottom: '27%', flexDirection: 'row', alignItems: 'flex-end', gap: 22 },
-  avatarBody: {
-    width: 34, height: 42, borderRadius: 18, borderBottomLeftRadius: 14, borderBottomRightRadius: 14,
-    backgroundColor: '#fff8ef',
-    shadowColor: '#28201a', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.35, shadowRadius: 14, elevation: 6,
+  markerBase: {
+    position: 'absolute', bottom: -8, width: 64, height: 27, borderRadius: 32, opacity: 0.9,
   },
-  eye: { position: 'absolute', top: 13, width: 5, height: 6, borderRadius: 3, backgroundColor: '#3a2a1c' },
-  guideShadow: { shadowColor: '#28201a', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.35, shadowRadius: 14, elevation: 6 },
+  markerOrb: {
+    width: 58, height: 58, borderRadius: 18, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2, borderColor: 'rgba(255,255,255,0.8)',
+    shadowColor: 'rgba(245,166,35,0.6)', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 16, elevation: 8,
+  },
+  figures: { position: 'absolute', left: '5%', bottom: '23%', flexDirection: 'row', alignItems: 'flex-end', gap: 0, zIndex: 3 },
+  characterShadow: {
+    position: 'absolute', left: 24, bottom: 3, width: 44, height: 13, borderRadius: 22,
+    backgroundColor: 'rgba(30,25,20,0.34)',
+  },
+  characterGlow: {
+    position: 'absolute', left: 14, top: 18, width: 44, height: 44, borderRadius: 22, opacity: 0.8,
+    shadowColor: '#fff', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 20, elevation: 4,
+  },
+  guideArt: { marginLeft: -6, marginBottom: 2 },
   bubble: {
     position: 'absolute', left: '16%', bottom: '46%', maxWidth: 230,
     backgroundColor: '#fff8ef', borderRadius: 18, borderBottomLeftRadius: 4, padding: 12,

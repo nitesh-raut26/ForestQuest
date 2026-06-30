@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BottomNav from '../components/BottomNav';
 import CurrencyPills from '../components/CurrencyPills';
-import RadialOrb from '../components/RadialOrb';
+import CharacterArt from '../components/CharacterArt';
 import { FONT } from '../theme/fonts';
 
 interface Props { vals: Record<string, any> }
@@ -26,8 +26,11 @@ export default function CreaturesScreen({ vals }: Props) {
         <View style={{ gap: 12 }}>
           {cards.map((c: any) => (
             <TouchableOpacity key={c.id} style={styles.card} onPress={c.onTap} activeOpacity={0.88}>
-              <View>
-                <RadialOrb size={62} glow={c.glow} body={c.body} style={styles.avatar} />
+              <View style={styles.avatarWrap}>
+                <View style={[styles.avatarFrame, { backgroundColor: c.glow }]}>
+                  <View style={[styles.avatarHalo, { backgroundColor: c.body }]} />
+                  <CharacterArt id={c.id} size={92} style={styles.avatar} />
+                </View>
                 <View style={[styles.stageBadge, { backgroundColor: c.accent }]}>
                   <Text style={styles.stageBadgeText}>S{c.stage}</Text>
                 </View>
@@ -62,7 +65,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff8ef', borderRadius: 22, padding: 14, flexDirection: 'row', gap: 14, alignItems: 'center',
     shadowColor: 'rgba(80,60,40,0.5)', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 1, shadowRadius: 20, elevation: 6,
   },
-  avatar: { shadowColor: '#28201a', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 14, elevation: 6 },
+  avatarWrap: { width: 76, height: 82 },
+  avatarFrame: {
+    width: 76, height: 82, borderRadius: 23, overflow: 'hidden',
+    alignItems: 'center', justifyContent: 'flex-end',
+    shadowColor: '#28201a', shadowOffset: { width: 0, height: 7 }, shadowOpacity: 0.24, shadowRadius: 14, elevation: 6,
+  },
+  avatarHalo: { position: 'absolute', width: 54, height: 54, borderRadius: 27, opacity: 0.27, top: 12 },
+  avatar: { marginBottom: -4 },
   stageBadge: { position: 'absolute', bottom: -3, right: -3, borderRadius: 10, paddingHorizontal: 7, paddingVertical: 2 },
   stageBadgeText: { fontFamily: FONT.nunito.extrabold, fontSize: 10, color: '#fff' },
   nameRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8 },

@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BottomNav from '../components/BottomNav';
 import CurrencyPills from '../components/CurrencyPills';
+import GameIcon from '../components/GameIcon';
 import { FONT } from '../theme/fonts';
 import { firstGradientColor, parseGradientColors } from '../utils/parseGradient';
 
@@ -123,7 +124,9 @@ export default function JourneyScreen({ vals }: Props) {
         <View style={{ gap: 8 }}>
           {codex.map((p: any) => (
             <View key={p.type} style={styles.codexCard}>
-              <LinearGradient colors={[p.color, p.colorDark]} style={styles.codexIcon} />
+              <LinearGradient colors={[p.color, p.colorDark]} style={styles.codexIcon}>
+                <GameIcon kind={p.type} size={31} color="#fff" secondary="#FFE98A" />
+              </LinearGradient>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <View style={styles.codexNameRow}>
                   <Text style={styles.codexName}>{p.name}</Text>
@@ -198,7 +201,11 @@ const styles = StyleSheet.create({
   ageCount: { fontFamily: FONT.baloo.extrabold, fontSize: 17, color: '#3f7d47' },
   ageLabel: { fontFamily: FONT.nunito.extrabold, fontSize: 9, color: '#9a8a76' },
   codexCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff8ef', borderRadius: 14, padding: 11 },
-  codexIcon: { width: 38, height: 38, borderRadius: 11 },
+  codexIcon: {
+    width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.7)',
+    shadowColor: '#5a4938', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.18, shadowRadius: 9, elevation: 3,
+  },
   codexNameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
   codexName: { fontFamily: FONT.nunito.extrabold, fontSize: 13, color: '#3a2a1c' },
   ageBadge: { backgroundColor: '#5EA862', borderRadius: 9, paddingHorizontal: 7, paddingVertical: 1 },

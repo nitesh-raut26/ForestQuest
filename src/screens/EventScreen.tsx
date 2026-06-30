@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import RadialOrb from '../components/RadialOrb';
+import GameIcon from '../components/GameIcon';
 import { FONT } from '../theme/fonts';
 import { parseGradientColors } from '../utils/parseGradient';
 
@@ -75,9 +75,9 @@ export default function EventScreen({ vals }: Props) {
         <View style={{ gap: 9 }}>
           {trials.map((t: any) => (
             <View key={t.id} style={styles.trial}>
-              <RadialOrb size={42} glow={t.glow} body={t.body} style={styles.trialIcon}>
-                <Text style={{ fontSize: 20 }}>{t.emoji}</Text>
-              </RadialOrb>
+              <LinearGradient colors={[t.glow, t.body]} style={styles.trialIcon}>
+                <GameIcon kind={t.id} size={34} color="#fff" secondary="#FFD86B" />
+              </LinearGradient>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={styles.trialName}>{t.name}</Text>
                 <Text style={styles.trialSub} numberOfLines={1}>{t.sub} · 💧{t.pearls}</Text>
@@ -100,7 +100,9 @@ export default function EventScreen({ vals }: Props) {
         <View style={{ gap: 9 }}>
           {shop.map((item: any) => (
             <View key={item.id} style={styles.shopRow}>
-              <LinearGradient colors={parseGradientColors(item.color) as any} style={styles.shopSwatch} />
+              <LinearGradient colors={parseGradientColors(item.color) as any} style={styles.shopSwatch}>
+                <GameIcon kind={item.id} size={38} color="#fff" secondary="#FFD86B" />
+              </LinearGradient>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={styles.shopName}>{item.name}</Text>
                 <Text style={styles.shopSub} numberOfLines={1}>{item.sub}</Text>
@@ -144,7 +146,11 @@ const styles = StyleSheet.create({
   completeTitle: { fontFamily: FONT.baloo.extrabold, fontSize: 19, color: '#3a2a1c' },
   completeSub: { fontFamily: FONT.nunito.semibold, fontSize: 12, color: '#3a2a1c' },
   trial: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff8ef', borderRadius: 16, padding: 11 },
-  trialIcon: {},
+  trialIcon: {
+    width: 48, height: 48, borderRadius: 15, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.7)',
+    shadowColor: '#20334a', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 5,
+  },
   trialName: { fontFamily: FONT.nunito.extrabold, fontSize: 13.5, color: '#3a2a1c' },
   trialSub: { fontFamily: FONT.nunito.semibold, fontSize: 11, color: '#7a6a58', marginTop: 2 },
   doneCircle: { width: 30, height: 30, borderRadius: 15, backgroundColor: '#3f7d47', alignItems: 'center', justifyContent: 'center' },
@@ -153,7 +159,11 @@ const styles = StyleSheet.create({
   playBtnText: { fontFamily: FONT.baloo.bold, fontSize: 13, color: '#fff' },
   shopTitle: { fontFamily: FONT.baloo.bold, fontSize: 15, color: '#fff', marginTop: -4 },
   shopRow: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 16, padding: 11 },
-  shopSwatch: { width: 42, height: 42, borderRadius: 12 },
+  shopSwatch: {
+    width: 52, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.28)',
+    shadowColor: '#102238', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 5,
+  },
   shopName: { fontFamily: FONT.nunito.extrabold, fontSize: 13.5, color: '#fff' },
   shopSub: { fontFamily: FONT.nunito.semibold, fontSize: 11, color: '#cdd9e8', marginTop: 2 },
   ownedText: { fontFamily: FONT.nunito.extrabold, fontSize: 11, color: '#7AFCD0', backgroundColor: 'rgba(122,252,208,0.15)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14 },

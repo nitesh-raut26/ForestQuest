@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import RadialOrb from '../components/RadialOrb';
+import CharacterArt from '../components/CharacterArt';
 import { FONT } from '../theme/fonts';
 
 const { width: W } = Dimensions.get('window');
@@ -29,14 +29,16 @@ export default function DetailScreen({ vals }: Props) {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={[styles.hero, { backgroundColor: dc.body || '#E8822F' }]}>
+        <LinearGradient colors={[dc.glow || '#FFC58C', dc.body || '#E8822F']} style={styles.hero}>
+          <View style={styles.heroHalo} />
           <TouchableOpacity style={styles.back} onPress={() => vals.goCreatures?.()} activeOpacity={0.85}>
             <Text style={styles.backText}>‹</Text>
           </TouchableOpacity>
           <Animated.View style={{ transform: [{ translateY: bob.interpolate({ inputRange: [0, 1], outputRange: [0, -7] }) }] }}>
-            <RadialOrb size={120} glow="#fff" body={dc.body || '#E8822F'} style={styles.avatar} />
+            <View style={styles.heroShadow} />
+            <CharacterArt name={dc.name} size={205} style={styles.avatar} />
           </Animated.View>
-        </View>
+        </LinearGradient>
 
         <View style={styles.cardWrap}>
           <View style={styles.card}>
@@ -63,7 +65,9 @@ export default function DetailScreen({ vals }: Props) {
           <View style={styles.stageRow}>
             {stages.map((st: any, i: number) => (
               <View key={i} style={[styles.stageCard, st.ring !== 'none' && { borderWidth: 2, borderColor: dc.accent }, { opacity: parseFloat(st.op) }]}>
-                <RadialOrb size={40} glow="#fff" body={dc.body || '#E8822F'} style={styles.stageAvatar} />
+                <View style={[styles.stageAvatar, { backgroundColor: dc.glow || '#fff' }]}>
+                  <CharacterArt name={dc.name} size={58} />
+                </View>
                 <Text style={styles.stageName}>{st.name}</Text>
                 <Text style={styles.stageDesc}>{st.desc}</Text>
               </View>
@@ -114,12 +118,20 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFF8EF' },
   scrollContent: { paddingBottom: 40 },
   hero: { height: 230, alignItems: 'center', justifyContent: 'center' },
+  heroHalo: {
+    position: 'absolute', width: 190, height: 190, borderRadius: 95, backgroundColor: 'rgba(255,255,255,0.22)',
+    top: 36,
+  },
+  heroShadow: {
+    position: 'absolute', bottom: 16, left: 53, width: 100, height: 20, borderRadius: 50,
+    backgroundColor: 'rgba(48,31,20,0.26)',
+  },
   back: {
     position: 'absolute', top: 50, left: 18, width: 38, height: 38, borderRadius: 19,
     backgroundColor: 'rgba(255,255,255,0.85)', alignItems: 'center', justifyContent: 'center', zIndex: 2,
   },
   backText: { fontFamily: FONT.baloo.extrabold, fontSize: 18, color: '#3a2a1c' },
-  avatar: { shadowColor: '#000', shadowOffset: { width: 0, height: 16 }, shadowOpacity: 0.3, shadowRadius: 36, elevation: 12 },
+  avatar: { marginTop: 18 },
   cardWrap: { paddingHorizontal: 20, marginTop: -26 },
   card: {
     backgroundColor: '#fff', borderRadius: 24, padding: 18,
@@ -139,7 +151,7 @@ const styles = StyleSheet.create({
   sectionTitle: { fontFamily: FONT.baloo.bold, fontSize: 15, color: '#3a2a1c', marginTop: 16, marginBottom: 8 },
   stageRow: { flexDirection: 'row', gap: 8 },
   stageCard: { flex: 1, backgroundColor: '#fff', borderRadius: 16, padding: 10, alignItems: 'center', shadowColor: 'rgba(80,60,40,0.5)', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 1, shadowRadius: 16, elevation: 4 },
-  stageAvatar: { marginBottom: 8 },
+  stageAvatar: { width: 48, height: 48, borderRadius: 16, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   stageName: { fontFamily: FONT.nunito.extrabold, fontSize: 11, color: '#3a2a1c' },
   stageDesc: { fontFamily: FONT.nunito.semibold, fontSize: 10, color: '#9a8a76', textAlign: 'center', lineHeight: 13, marginTop: 3 },
   abilityRow: { flexDirection: 'row', gap: 10 },
