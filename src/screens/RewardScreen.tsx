@@ -1,20 +1,30 @@
 import React from 'react';
+// RewardScreen component
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import RadialOrb from '../components/RadialOrb';
 import RadialBackdrop from '../components/RadialBackdrop';
+import CharacterArt, { characterIdFromName } from '../components/CharacterArt';
+import GameIcon from '../components/GameIcon';
 import { FONT } from '../theme/fonts';
 
 const { width: W, height: H } = Dimensions.get('window');
 
 export default function RewardScreen({ vals }: Props) {
   const rw = vals.rw || {};
+  const friendId = characterIdFromName(rw.creature);
   return (
     <View style={styles.container}>
       <RadialBackdrop width={W} height={H} cx={0.5} cy={0.4} colors={['rgba(74,124,89,0.55)', 'rgba(20,15,10,0.85)']} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.card}>
-          <RadialOrb size={84} glow={rw.glow || '#FFC58C'} body={rw.body || '#E8822F'} style={styles.avatar} />
+          {friendId ? (
+            <View style={[styles.avatarFrame, { backgroundColor: rw.glow || '#FFC58C' }]}>
+              <CharacterArt id={friendId} size={108} />
+            </View>
+          ) : (
+            <RadialOrb size={84} glow={rw.glow || '#FFC58C'} body={rw.body || '#E8822F'} style={styles.avatar} />
+          )}
           <View style={styles.stars}>
             {[0, 1, 2].map(i => <Text key={i} style={styles.star}>★</Text>)}
           </View>
@@ -52,15 +62,29 @@ export default function RewardScreen({ vals }: Props) {
           )}
           {vals.rwIsEvent && (
             <LinearGradient colors={['#1565C0', '#37474F']} style={styles.banner}>
-              <Text style={styles.bannerTag}>💧 Monsoon Reward</Text>
-              <Text style={styles.bannerTitle}>+{rw.pearls} Rain Pearls</Text>
+              <View style={styles.bannerIconRow}>
+                <View style={styles.bannerIcon}>
+                  <GameIcon kind="rising" size={26} color="#A9E8FF" secondary="#fff" />
+                </View>
+                <View>
+                  <Text style={styles.bannerTag}>Monsoon Reward</Text>
+                  <Text style={styles.bannerTitle}>+{rw.pearls} Rain Pearls</Text>
+                </View>
+              </View>
             </LinearGradient>
           )}
           {rw.hasUnlock && (
-            <LinearGradient colors={['#5EA862', '#3f7d47']} style={styles.banner}>
-              <Text style={styles.bannerTag}>✦ New Region Unlocked</Text>
-              <Text style={styles.bannerTitle}>{rw.unlockedName}</Text>
-              <Text style={styles.bannerSub}>{rw.unlockedGuide} is waiting on the World Map.</Text>
+            <LinearGradient colors={['#F7D87C', '#E8954E']} style={styles.unlockBanner}>
+              <View style={styles.unlockGuideArt}>
+                <CharacterArt id="ari" size={88} />
+              </View>
+              <View style={styles.unlockCopy}>
+                <Text style={[styles.bannerTag, { color: '#704512' }]}>Ari found a new trail!</Text>
+                <Text style={[styles.bannerTitle, { color: '#3a2a1c' }]}>{rw.unlockedName}</Text>
+                <Text style={[styles.bannerSub, { color: '#5d4427' }]}>
+                  “The path is awake. I’ll jump there first—{rw.unlockedGuide} is waiting!”
+                </Text>
+              </View>
             </LinearGradient>
           )}
 
@@ -86,6 +110,11 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 30 }, shadowOpacity: 0.5, shadowRadius: 50, elevation: 20,
   },
   avatar: { marginTop: -58, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.35, shadowRadius: 24, elevation: 10 },
+  avatarFrame: {
+    width: 94, height: 94, borderRadius: 30, marginTop: -62, overflow: 'hidden',
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.35, shadowRadius: 24, elevation: 10,
+  },
   stars: { flexDirection: 'row', gap: 6, marginTop: 6, marginBottom: 10 },
   star: { fontSize: 22, color: '#F5A623' },
   title: { fontFamily: FONT.baloo.bold, fontSize: 24, color: '#3a2a1c', textAlign: 'center' },
@@ -100,9 +129,20 @@ const styles = StyleSheet.create({
   xpVal: { fontFamily: FONT.baloo.extrabold, fontSize: 15, color: '#F5A623' },
   xpEarned: { fontFamily: FONT.nunito.bold, fontSize: 11, color: '#9a8a76' },
   banner: { width: '100%', borderRadius: 16, padding: 13, marginBottom: 14 },
+  bannerIconRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  bannerIcon: {
+    width: 38, height: 38, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.14)',
+    alignItems: 'center', justifyContent: 'center',
+  },
   bannerTag: { fontFamily: FONT.nunito.extrabold, fontSize: 10, color: '#fff', textTransform: 'uppercase', letterSpacing: 1, opacity: 0.9 },
   bannerTitle: { fontFamily: FONT.baloo.bold, fontSize: 18, color: '#fff', marginTop: 1 },
   bannerSub: { fontFamily: FONT.nunito.semibold, fontSize: 11.5, color: '#fff', opacity: 0.92 },
+  unlockBanner: {
+    width: '100%', minHeight: 112, borderRadius: 18, marginBottom: 14, overflow: 'hidden',
+    flexDirection: 'row', alignItems: 'flex-end',
+  },
+  unlockGuideArt: { width: 96, height: 112, alignItems: 'center', justifyContent: 'flex-end', marginLeft: -4 },
+  unlockCopy: { flex: 1, paddingTop: 14, paddingRight: 12, paddingBottom: 13 },
   continueBtn: { borderRadius: 30, paddingVertical: 15, alignItems: 'center', shadowColor: '#2f5e36', shadowOffset: { width: 0, height: 7 }, shadowOpacity: 1, shadowRadius: 0, elevation: 6 },
   continueBtnText: { fontFamily: FONT.baloo.bold, fontSize: 17, color: '#fff' },
 });
