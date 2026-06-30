@@ -1,10 +1,12 @@
 import React, { useEffect, useRef } from 'react';
+// SanctuaryScreen component
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BottomNav from '../components/BottomNav';
 import CurrencyPills from '../components/CurrencyPills';
 import RadialOrb from '../components/RadialOrb';
+import CharacterArt from '../components/CharacterArt';
 import { FONT } from '../theme/fonts';
 import { parseGradientColors } from '../utils/parseGradient';
 
@@ -35,6 +37,7 @@ export default function SanctuaryScreen({ vals }: Props) {
   const insets = useSafeAreaInsets();
   const zones = vals.sanctuaryZones || [];
   const decor = vals.decorItems || [];
+  const friendIds = ['pip', 'mimi', 'tomo', 'luma', 'nori', 'sol'];
   return (
     <LinearGradient colors={['#bfe0c4', '#9bc9a4', '#7aa97f']} locations={[0, 0.44, 1]} style={styles.container}>
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 90 + insets.bottom }]}>
@@ -62,7 +65,9 @@ export default function SanctuaryScreen({ vals }: Props) {
           {zones.map((z: any, i: number) => (
             <View key={i} style={[styles.zoneCard, { opacity: parseFloat(z.op) }]}>
               <View style={styles.zoneRow}>
-                <RadialOrb size={42} glow={z.glow} body={z.body} />
+                <View style={[styles.zoneAvatar, { backgroundColor: z.glow }]}>
+                  <CharacterArt id={friendIds[i]} size={58} />
+                </View>
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <Text style={styles.zoneName} numberOfLines={1}>{z.home}</Text>
                   <Text style={styles.zoneStatus} numberOfLines={1}>{z.status}</Text>
@@ -112,6 +117,7 @@ const styles = StyleSheet.create({
   zoneGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 16 },
   zoneCard: { width: '47.5%', backgroundColor: '#fff8ef', borderRadius: 18, padding: 12, shadowColor: '#28201a', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.25, shadowRadius: 16, elevation: 4 },
   zoneRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  zoneAvatar: { width: 46, height: 46, borderRadius: 15, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   zoneName: { fontFamily: FONT.nunito.extrabold, fontSize: 13, color: '#3a2a1c' },
   zoneStatus: { fontFamily: FONT.nunito.bold, fontSize: 10.5, color: '#9a8a76' },
   giftBtn: { marginTop: 10, borderRadius: 14, paddingVertical: 8, alignItems: 'center' },
