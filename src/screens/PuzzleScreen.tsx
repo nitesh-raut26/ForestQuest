@@ -1,8 +1,10 @@
 import React from 'react';
+// PuzzleScreen component
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import RadialOrb from '../components/RadialOrb';
 import RadialBackdrop from '../components/RadialBackdrop';
+import CharacterArt from '../components/CharacterArt';
+import GameIcon from '../components/GameIcon';
 import { FONT } from '../theme/fonts';
 import {
   ColourPuzzle, MemoryPuzzle, FlowPuzzle, ShapePuzzle, SequencePuzzle,
@@ -14,6 +16,15 @@ import {
 const { width: W, height: H } = Dimensions.get('window');
 
 interface Props { vals: Record<string, any> }
+
+function puzzleKind(vals: Record<string, any>) {
+  const kinds = [
+    'Colour', 'Memory', 'Flow', 'Shape', 'Sequence', 'Weight', 'Light', 'Shadow', 'Rune',
+    'Recall', 'Number', 'Slide', 'Hanoi', 'Eqn', 'Dots', 'Word', 'Trace', 'Odd', 'Count', 'Maze',
+  ];
+  const found = kinds.find((kind) => vals[`is${kind}`]);
+  return found ? (found === 'Recall' ? 'sound' : found.toLowerCase()) : 'shape';
+}
 
 function PuzzleBody({ vals }: Props) {
   // gameLogic.js's renderVals() never exposes a `puzzleType` string — the
@@ -44,6 +55,7 @@ function PuzzleBody({ vals }: Props) {
 export default function PuzzleScreen({ vals }: Props) {
   const attempts: any[] = vals.attemptDots || [];
   const isLadder = vals.isLadderPuzzle;
+  const kind = puzzleKind(vals);
 
   return (
     <View style={styles.container}>
@@ -58,7 +70,12 @@ export default function PuzzleScreen({ vals }: Props) {
           <Text style={styles.backText}>✕</Text>
         </TouchableOpacity>
         <View style={styles.titleBox}>
-          <Text style={styles.puzzleTitle} numberOfLines={1}>{vals.puzzleTitle}</Text>
+          <View style={styles.titleLine}>
+            <View style={styles.puzzleIcon}>
+              <GameIcon kind={kind} size={24} color="#fff" secondary="#FFD86B" />
+            </View>
+            <Text style={styles.puzzleTitle} numberOfLines={1}>{vals.puzzleTitle}</Text>
+          </View>
           {isLadder && (
             <View style={styles.ladderRow}>
               <Text style={styles.ladderLabel}>{vals.ladderLabel}</Text>
@@ -85,7 +102,9 @@ export default function PuzzleScreen({ vals }: Props) {
       {/* Creature hint bubble */}
       {vals.hintOpen && (
         <View style={styles.hintRow}>
-          <RadialOrb size={42} glow={vals.pgGlow || '#FFC58C'} body={vals.pgBody || '#E8822F'} style={styles.hintAvatar} />
+          <View style={[styles.hintAvatar, { backgroundColor: vals.pgGlow || '#FFC58C' }]}>
+            <CharacterArt name={vals.pgName} size={62} />
+          </View>
           <View style={styles.hintBubble}>
             <Text style={[styles.hintName, { color: vals.pgBody || '#E8822F' }]}>{vals.pgName}</Text>
             <Text style={styles.hintText}>{vals.hintText}</Text>
@@ -112,6 +131,11 @@ const styles = StyleSheet.create({
   },
   backText: { fontFamily: FONT.baloo.extrabold, fontSize: 18, color: '#3a2a1c' },
   titleBox: { flex: 1, alignItems: 'center', gap: 4 },
+  titleLine: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, maxWidth: '100%' },
+  puzzleIcon: {
+    width: 30, height: 30, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.14)',
+    alignItems: 'center', justifyContent: 'center',
+  },
   puzzleTitle: { fontFamily: FONT.baloo.bold, fontSize: 18, color: '#fff' },
   ladderRow: { flexDirection: 'row', gap: 6, alignItems: 'center' },
   ladderLabel: { fontFamily: FONT.nunito.extrabold, fontSize: 10, color: '#FFD86B', letterSpacing: 0.3 },
@@ -122,7 +146,10 @@ const styles = StyleSheet.create({
   hintBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
   hintBtnText: { fontFamily: FONT.nunito.extrabold, fontSize: 12, color: '#3a2a1c' },
   hintRow: { position: 'absolute', top: 108, left: 18, right: 18, zIndex: 2, flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
-  hintAvatar: { shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 14, elevation: 6 },
+  hintAvatar: {
+    width: 48, height: 48, borderRadius: 16, overflow: 'hidden', alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 14, elevation: 6,
+  },
   hintBubble: {
     flex: 1, backgroundColor: '#fff8ef', borderRadius: 16, borderTopLeftRadius: 4, padding: 12,
     shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.35, shadowRadius: 20, elevation: 8,
