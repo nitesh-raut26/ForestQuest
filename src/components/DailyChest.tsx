@@ -73,3 +73,4 @@ const styles = StyleSheet.create({
   actionBtn: { width: '100%', borderRadius: 26, paddingVertical: 15, alignItems: 'center' },
   actionText: { fontFamily: FONT.baloo.bold, fontSize: 17, color: '#fff' },
 });
+// Minor update
